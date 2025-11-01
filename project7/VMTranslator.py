@@ -1,4 +1,5 @@
 from enum import Enum
+import sys
 
 class CommandType(Enum):
   C_ARITHMETIC = 1
@@ -35,17 +36,19 @@ class Parser:
       line = self.file.readline()
       if not line: # EOF
         return False
-      stripped_line = line.split("//", 1)[0]
-      if stripped_line != "":
-        self.line = stripped_line
-        return True
+      # Remove comments and whitespace
+      stripped_line = line.split("//", 1)[0].strip()
+      if stripped_line == "":
+        continue
+      self.line = stripped_line
+      return True
 
   def commandType(self) -> CommandType:
     """
     Call after check hasMoreLines == true
     Retuns a constant representing the type of the current command.
     """
-    if self.line.startswith("eq") or self.line.startswith("add") or self.line.startswith("sub") or self.line.startswith(""):
+    if self.line.startswith("eq") or self.line.startswith("add") or self.line.startswith("sub"):
       return CommandType.C_ARITHMETIC
     elif self.line.startswith("push"):
       return CommandType.C_PUSH
@@ -70,14 +73,10 @@ class Parser:
     If the current command is C_ARITHMETIC, the command itself (add, sub, etc.) is returned.
     Called only if the current command is not C_RETURN.
     """
-    if self.commandType() == CommandType.C_RETURN:
-      return
-    
-    divided_line = self.line.split("", 1)
+
+    divided_line = self.line.split()
     if self.commandType() == CommandType.C_ARITHMETIC:
       return divided_line[0]
-    
-    """for other commands"""
     return divided_line[1]
   
   def arg2(self):
@@ -86,21 +85,40 @@ class Parser:
     Called only if the current command is C_PUSH, C_POP, C_FUNCTION, or C_CALL.
     """
     if self.commandType() in (CommandType.C_PUSH, CommandType.C_POP, CommandType.C_FUNCTION, CommandType.C_CALL):
-      divided_line = self.line.split("", 2)
+      divided_line = self.line.split()
       return int(divided_line[2])
-    
+
     if self.commandType() not in (CommandType.C_PUSH, CommandType.C_POP, CommandType.C_FUNCTION, CommandType.C_CALL):
       print("Error: arg2 called on invalid command type")
       return
 
 
 class CodeWriter:
-  def __init__(self):
+  def __init__(self, file_name=None):
     """
     This class handles the output file
     """
+    self.file = None
+    if file_name:
+      self.file = open(file_name + '.asm', 'w', encoding='utf-8')
+    
+  def writeArithmetic(self, command):
+    """
+    Writes to the output file the assembly code that implements the given arithmetic-logical command.
+    """
     return
-  
+
+  def writePushPop(self, command, segment, index):
+    """
+    Writes to the output file the assembly code that implements the given push or pop command.
+    """
+    return
+
+  def close(self):
+    """Closes the output file."""
+    if self.file:
+      self.file.close()
+
 class VMTranslator:
   def __init__(self, file_name):
     self.file_name = file_name
@@ -111,9 +129,24 @@ class VMTranslator:
 
 
 def main():
-  print("Hello World")
+  print("main")
 
-  # Test code here
+# This is a test for parser
+  if len(sys.argv) != 2:
+    print("Usage: VMTranslator.py <inputfile.vm>")
+    return
+  input_path = sys.argv[1]
+
+  # Test Parser
+  parser = Parser(input_path)
+  while parser.hasMoreLines():
+    print("Current line:", parser.line)
+    cmd_type = parser.commandType()
+    print("Command Type:", cmd_type)
+    if cmd_type != CommandType.C_RETURN:
+      print("Arg1:", parser.arg1())
+    if cmd_type in (CommandType.C_PUSH, CommandType.C_POP, CommandType.C_FUNCTION, CommandType.C_CALL):
+      print("Arg2:", parser.arg2())
 
 if __name__=='__main__':
   main()
