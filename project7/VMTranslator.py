@@ -48,7 +48,7 @@ class Parser:
     Call after check hasMoreLines == true
     Retuns a constant representing the type of the current command.
     """
-    if self.line.startswith("eq") or self.line.startswith("add") or self.line.startswith("sub"):
+    if self.line.startswith("eq") or self.line.startswith("add") or self.line.startswith("sub") or self.line.startswith("neg") or self.line.startswith("gt") or self.line.startswith("lt") or self.line.startswith("and") or self.line.startswith("or") or self.line.startswith("not"):
       return CommandType.C_ARITHMETIC
     elif self.line.startswith("push"):
       return CommandType.C_PUSH
@@ -99,6 +99,7 @@ class CodeWriter:
     This class handles the output file
     """
     self.file = None
+    self.label_counter = 0
     if file_name:
       self.file = open(file_name + '.asm', 'w', encoding='utf-8')
     
@@ -111,198 +112,73 @@ class CodeWriter:
       return
 
     if command == 'add':
+      self.file.write("\n\n")
       self.file.write("// add\n")
-      self.file.write("// SP--\n")
       self.file.write("@SP\n")
-      self.file.write("M=M-1\n")
-      self.file.write("A=M\n")
-      self.file.write("D=M\n")  # D = *SP
-
-      self.file.write("// R13 = *SP - 1\n ")
-      self.file.write("@R13\n")
-      self.file.write("M=D\n")  # R13 = *SP
-
-      self.file.write("// SP--\n")
-      self.file.write("@SP\n")
-      self.file.write("M=M-1\n")
-      self.file.write("A=M\n")
-      
-      self.file.write("// D = *SP + R13\n")
-      self.file.write("D=M+D\n")
-      self.file.write("// RAM[SP] = D\n")
-      self.file.write("@SP\n")
-      self.file.write("A=M\n")
-      self.file.write("M=D\n")
-      self.file.write("// SP++\n")
-      self.file.write("@SP\n")
-      self.file.write("M=M+1\n")
+      self.file.write("M=M-1\n") # SP--
+      self.file.write("A=M\n") # A = SP (now points to top value y)
+      self.file.write("D=M\n")  # D = y
+      self.file.write("A=A-1\n") # A = SP - 1 (now points to next value x)
+      self.file.write("M=D+M\n")  # M = x + y
       return
-    
+
     elif command == 'sub':
+      self.file.write("\n\n")
       self.file.write("// sub\n")
-      self.file.write("// SP--\n")
       self.file.write("@SP\n")
-      self.file.write("M=M-1\n")
-      self.file.write("A=M\n")
-      self.file.write("D=M\n")  # D = *SP
-
-      self.file.write("// R13 = *SP - 1\n ")
-      self.file.write("@R13\n")
-      self.file.write("M=D\n")  # R13 = *SP
-
-      self.file.write("// SP--\n")
-      self.file.write("@SP\n")
-      self.file.write("M=M-1\n")
-      self.file.write("A=M\n")
-
-      self.file.write("// D = *SP - R13\n")
-      self.file.write("D=M-D\n")
-      self.file.write("// RAM[SP] = D\n")
-      self.file.write("@SP\n")
-      self.file.write("A=M\n")
-      self.file.write("M=D\n")
-      self.file.write("// SP++\n")
-      self.file.write("@SP\n")
-      self.file.write("M=M+1\n")
+      self.file.write("M=M-1\n") # SP--
+      self.file.write("A=M\n") # A = SP (now points to top value y)
+      self.file.write("D=M\n")  # D = y
+      self.file.write("A=A-1\n") # A = SP - 1 (now M points to x)
+      self.file.write("M=M-D\n")  # M = x - y
       return
 
     elif command == 'neg':
+      self.file.write("\n\n")
       self.file.write("// neg\n")
-      self.file.write("// SP--\n")
       self.file.write("@SP\n")
-      self.file.write("M=M-1\n")
-      self.file.write("A=M\n")
-      self.file.write("M=-M\n")  # *SP = -(*SP)
-      self.file.write("// SP++\n")
-      self.file.write("@SP\n")
-      self.file.write("M=M+1\n")
+      self.file.write("A=M-1\n")
+      self.file.write("M=-M\n")
       return
     
-    elif command == 'eq':
-      #implement true as -1 and false as 0
-      self.file.write("// eq\n")
-      # pop y into D
-      self.file.write("// SP--\n")
-      self.file.write("@SP\n")
-      self.file.write("M=M-1\n")
-      self.file.write("A=M\n")
-      self.file.write("D=M\n")
-
-      # pop x and compute D = x -y
-      self.file.write("// SP-- ; D = x - y\n")
-      self.file.write("@SP\n")
-      self.file.write("AM=M-1\n")
-      self.file.write("D=M-D\n")  # D = x - y
-
-      # unique labels
-      true_label = f"EQ_TRUE{self.label_counter}"
-      end_label = f"EQ_END{self.label_counter}"
+    elif command in ('eq', 'gt', 'lt'):
+      self.file.write("\n\n")
+      jump = {'eq': 'JEQ', 'gt': 'JGT', 'lt': 'JLT'}[command]
+      true_label = f"{command.upper()}_TRUE{self.label_counter}"
+      end_label = f"{command.upper()}_END{self.label_counter}"
       self.label_counter += 1
-
-      # Branching here
-      self.file.write("// if D==0 jump to TRUE\n")
-      self.file.write(f"@{true_label}\n")
-      self.file.write("D;JEQ\n")
-
-      # false case: set D=0 (false)
-      self.file.write("// false case: set D=0 (false)\n")
+      self.file.write(f"// {command}\n")
+      self.file.write("@SP\nAM=M-1\nD=M\nA=A-1\nD=M-D\n")
+      self.file.write(f"@{true_label}\nD;{jump}\n")
+      self.file.write("@SP\nA=M-1\nM=0\n")
+      self.file.write(f"@{end_label}\n0;JMP\n")
+      self.file.write(f"({true_label})\n@SP\nA=M-1\nM=-1\n")
       self.file.write(f"({end_label})\n")
-      self.file.write("@SP\n")
-      self.file.write("A=M\n")
-      self.file.write("M=0\n")
-      self.file.write("// jump to END\n")
-      self.file.write(f"@{end_label}\n")
-      self.file.write("0;JMP\n")
-
-      # true case: set D=-1 (true)
-      self.file.write("// true case: set D=-1 (true)\n")
-      self.file.write(f"({true_label})\n")
-      self.file.write("@SP\n")
-      self.file.write("A=M\n")
-      self.file.write("M=-1\n")
-
-      # jump to END
-      self.file.write("// jump to END\n")
-      self.file.write(f"({end_label})\n")
-
-      # SP++
-      self.file.write("// SP++\n")
-      self.file.write("@SP\n")
-      self.file.write("M=M+1\n")
-      return
-    
-    elif command == 'gt':
-      self.file.write("// gt\n")
-      
-      self.file.write("// SP--\n")
-      self.file.write("@SP\n")
-      self.file.write("M=M-1\n")
-      self.file.write("A=M\n")
-      self.file.write("D=M\n")  # D = *SP
-
-      # pop y into D
-      self.file.write("// R13 = *SP - 1\n ")
-      self.file.write("@R13\n")
-      self.file.write("M=D\n")  # R13 = *SP
-
-      self.file.write("// SP--\n")
-      self.file.write("@SP\n")
-      self.file.write("M=M-1\n")
-      self.file.write("A=M\n")
-      
-      # if x > y, D = x - y > 0
-      self.file.write("// D = *SP - R13\n")
-      self.file.write("D=M-D\n")
-
-      # unique labels
-      true_label = f"GT_TRUE{self.label_counter}"
-      end_label = f"GT_END{self.label_counter}"
-      self.label_counter += 1
-
-      # Branching here
-      self.file.write("// if D>0 jump to TRUE\n")
-      self.file.write(f"@{true_label}\n")
-      self.file.write("D;JGT\n")
-
-      # false case: set D=0 (false)
-      self.file.write("// false case: set D=0 (false)\n")
-      self.file.write(f"({end_label})\n")
-      self.file.write("@SP\n")
-      self.file.write("A=M\n")
-      self.file.write("M=0\n")
-      self.file.write("// jump to END\n")
-      self.file.write(f"@{end_label}\n")
-      self.file.write("0;JMP\n")
-      # true case: set D=-1 (true)
-      self.file.write("// true case: set D=-1 (true)\n")
-      self.file.write(f"({true_label})\n")
-      self.file.write("@SP\n")
-      self.file.write("A=M\n")
-      self.file.write("M=-1\n")
-      # jump to END
-      self.file.write("// jump to END\n")
-      self.file.write(f"({end_label})\n")
-
-      # SP++
-      self.file.write("// SP++\n")
-      self.file.write("@SP\n")
-      self.file.write("M=M+1\n")
-      return
-    
-    elif command == 'lt':
-      # To be implemented
       return
     
     elif command == 'and':
-      # To be implemented
+      self.file.write("// and\n")
+      self.file.write("@SP\n")
+      self.file.write("AM=M-1\n")
+      self.file.write("D=M\n")
+      self.file.write("A=A-1\n")
+      self.file.write("M=D&M\n")  # *SP = *SP & D
       return
     
     elif command == 'or':
-      # To be implemented
-      return  
+      self.file.write("//or\n")
+      self.file.write("@SP\n")
+      self.file.write("AM=M-1\n")
+      self.file.write("D=M\n")
+      self.file.write("A=A-1\n")
+      self.file.write("M=D|M\n")  # *SP = *SP | D
+      return
     elif command == 'not':
-
-      # To be implemented
+      self.file.write("\n\n")
+      self.file.write("// not\n")
+      self.file.write("@SP\n")
+      self.file.write("A=M-1\n")
+      self.file.write("M=!M\n")  # *SP = !(*SP)
       return
 
   def writePushPop(self, commandType, segment, index):
@@ -314,6 +190,7 @@ class CodeWriter:
       return
     
     if commandType == 'C_PUSH':
+      self.file.write("\n\n")
       self.file.write(f"// push {segment} {index}\n")
 
       if segment == 'constant':
@@ -409,6 +286,7 @@ class CodeWriter:
       -----------------------POP-----------------------
       """
     elif commandType == 'C_POP':
+      self.file.write("\n\n")
       self.file.write(f"// pop {segment} {index}\n")
       if segment == 'temp':
         base_addr = 5
@@ -484,7 +362,7 @@ class VMTranslator:
   def __init__(self, file_name):
     self.file_name = file_name
     self.parser = Parser(file_name)
-    self.code_writer = CodeWriter()
+    self.code_writer = CodeWriter(file_name.split('.')[0])
 
   def start(self):
     while self.parser.hasMoreLines():
