@@ -380,23 +380,6 @@ class VMTranslator:
 def main():
   print("main")
 
-# # This is a test for parser
-#   if len(sys.argv) != 2:
-#     print("Usage: VMTranslator.py <inputfile.vm>")
-#     return
-#   input_path = sys.argv[1]
-
-#   # Test Parser
-#   parser = Parser(input_path)
-#   while parser.hasMoreLines():
-#     print("Current line:", parser.line)
-#     cmd_type = parser.commandType()
-#     print("Command Type:", cmd_type)
-#     if cmd_type != CommandType.C_RETURN:
-#       print("Arg1:", parser.arg1())
-#     if cmd_type in (CommandType.C_PUSH, CommandType.C_POP, CommandType.C_FUNCTION, CommandType.C_CALL):
-#       print("Arg2:", parser.arg2())
-
 # This is a test for parser
   if len(sys.argv) != 2:
     print("Usage: VMTranslator.py <inputfile.vm>")
