@@ -519,6 +519,9 @@ class VMTranslator:
     self.is_directory = is_directory
     self.vm_files = []
     
+    # Get the directory where VMTranslator.py is located
+    script_dir = Path(__file__).parent
+    
     if is_directory:
       # Get all .vm files, with Sys.vm first
       dir_path = Path(input_path)
@@ -531,13 +534,13 @@ class VMTranslator:
       # Sys.vm should be first
       self.vm_files = sys_files + other_files
       
-      # Output file is directory name + .asm
-      output_name = dir_path.name
-      self.code_writer = CodeWriter(str(dir_path / output_name))
+      # Output file in script directory with input directory name
+      output_name = Path(input_path).name
+      self.code_writer = CodeWriter(str(script_dir / output_name))
     else:
       self.vm_files = [Path(input_path)]
       output_name = Path(input_path).stem
-      self.code_writer = CodeWriter(output_name)
+      self.code_writer = CodeWriter(str(script_dir / output_name))
 
   def start(self):
     # Write bootstrap code if directory
