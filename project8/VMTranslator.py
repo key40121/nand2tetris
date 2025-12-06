@@ -107,13 +107,26 @@ class CodeWriter:
     """
     self.file = None
     self.label_counter = 0
+    self.static_counter = 0
     self.current_file_name = None
+    self.static_vars = {}  # Map of filename.varname -> address
     if file_name:
       self.file = open(file_name + '.asm', 'w', encoding='utf-8')
     
   def setFileName(self, file_name):
     """Sets the current file name for static segment handling."""
     self.current_file_name = Path(file_name).stem
+  
+  def getStaticAddress(self, index):
+    """
+    Get or allocate a static variable address.
+    Static variables are global across all files and start at address 16.
+    """
+    var_key = f"{self.current_file_name}.{index}"
+    if var_key not in self.static_vars:
+      self.static_vars[var_key] = 16 + self.static_counter
+      self.static_counter += 1
+    return self.static_vars[var_key]
     
   def writeBootstrap(self):
     """Writes the bootstrap code."""
@@ -245,10 +258,9 @@ class CodeWriter:
         return
       
       elif segment == 'static':
-        # Use file-specific static segment addresses
-        static_addr = 16 + (ord(self.current_file_name[0]) % 240)  # Generate unique address per file
-        self.file.write(f"// D = RAM[{static_addr + index}]\n")
-        self.file.write(f"@{static_addr + index}\n")
+        static_addr = self.getStaticAddress(index)
+        self.file.write(f"// D = RAM[{static_addr}]\n")
+        self.file.write(f"@{static_addr}\n")
         self.file.write("D=M\n")
         self.file.write("// RAM[SP] = D\n")
         self.file.write("@SP\n")
@@ -323,14 +335,13 @@ class CodeWriter:
         return
       
       elif segment == 'static':
-        # Use file-specific static segment addresses
-        static_addr = 16 + (ord(self.current_file_name[0]) % 240)  # Generate unique address per file
+        static_addr = self.getStaticAddress(index)
         self.file.write(f"// SP--\n")
         self.file.write("@SP\n")
         self.file.write("AM=M-1\n")
         self.file.write("D=M\n")  # D = *SP
-        self.file.write(f"// RAM[{static_addr + index}] = RAM[SP]\n")
-        self.file.write(f"@{static_addr + index}\n")
+        self.file.write(f"// RAM[{static_addr}] = RAM[SP]\n")
+        self.file.write(f"@{static_addr}\n")
         self.file.write("M=D\n")
         return
       
