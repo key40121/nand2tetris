@@ -1,5 +1,7 @@
 from enum import Enum
 import sys
+import os
+from pathlib import Path
 
 class CommandType(Enum):
   C_ARITHMETIC = 1
@@ -93,6 +95,10 @@ class Parser:
       print("Error: arg2 called on invalid command type")
       return
 
+  def close(self):
+    """Closes the input file."""
+    self.file.close()
+
 
 class CodeWriter:
   def __init__(self, file_name=None):
@@ -101,9 +107,24 @@ class CodeWriter:
     """
     self.file = None
     self.label_counter = 0
+    self.current_file_name = None
     if file_name:
       self.file = open(file_name + '.asm', 'w', encoding='utf-8')
     
+  def setFileName(self, file_name):
+    """Sets the current file name for static segment handling."""
+    self.current_file_name = Path(file_name).stem
+    
+  def writeBootstrap(self):
+    """Writes the bootstrap code."""
+    self.file.write("// Bootstrap code\n")
+    self.file.write("@256\n")
+    self.file.write("D=A\n")
+    self.file.write("@SP\n")
+    self.file.write("M=D\n")
+    self.file.write("// call Sys.init\n")
+    self.writeCall("Sys.init", 0)
+
   def writeArithmetic(self, command):
     """
     Writes to the output file the assembly code that implements the given arithmetic-logical command.
@@ -224,9 +245,10 @@ class CodeWriter:
         return
       
       elif segment == 'static':
-        base_addr = 16
-        self.file.write(f"// D = RAM[{base_addr + index}]\n")
-        self.file.write(f"@{base_addr + index}\n")
+        # Use file-specific static segment addresses
+        static_addr = 16 + (ord(self.current_file_name[0]) % 240)  # Generate unique address per file
+        self.file.write(f"// D = RAM[{static_addr + index}]\n")
+        self.file.write(f"@{static_addr + index}\n")
         self.file.write("D=M\n")
         self.file.write("// RAM[SP] = D\n")
         self.file.write("@SP\n")
@@ -301,13 +323,14 @@ class CodeWriter:
         return
       
       elif segment == 'static':
-        base_addr = 16
+        # Use file-specific static segment addresses
+        static_addr = 16 + (ord(self.current_file_name[0]) % 240)  # Generate unique address per file
         self.file.write(f"// SP--\n")
         self.file.write("@SP\n")
         self.file.write("AM=M-1\n")
         self.file.write("D=M\n")  # D = *SP
-        self.file.write(f"// RAM[{base_addr + index}] = RAM[SP]\n")
-        self.file.write(f"@{base_addr + index}\n")
+        self.file.write(f"// RAM[{static_addr + index}] = RAM[SP]\n")
+        self.file.write(f"@{static_addr + index}\n")
         self.file.write("M=D\n")
         return
       
@@ -382,6 +405,13 @@ class CodeWriter:
     """Writes assembly code that effects the function command."""
     self.file.write(f"// function {functionName} {numLocals}\n")
     self.file.write(f"({functionName})\n")
+    # Initialize local variables to 0
+    for i in range(numLocals):
+      self.file.write("@SP\n")
+      self.file.write("A=M\n")
+      self.file.write("M=0\n")
+      self.file.write("@SP\n")
+      self.file.write("M=M+1\n")
 
   def writeCall(self, functionName, numArgs):
     """Writes assembly code that effects the call command."""
@@ -444,8 +474,6 @@ class CodeWriter:
     self.file.write("M=D\n")  # R13 = FRAME
 
     # RET = *(FRAME-5)
-    # self.file.write("@5\nA=D-A\nD=M\n")
-    # self.file.write("@R14\nM=D\n")  # R14 = RET
     self.file.write("// RET = *(FRAME-5)\n")
     self.file.write("@5\n")
     self.file.write("A=D-A\n")
@@ -486,57 +514,97 @@ class CodeWriter:
       self.file.close()
 
 class VMTranslator:
-  def __init__(self, file_name):
-    self.file_name = file_name
-    self.parser = Parser(file_name)
-    self.code_writer = CodeWriter(file_name.split('.')[0])
+  def __init__(self, input_path, is_directory=False):
+    self.input_path = input_path
+    self.is_directory = is_directory
+    self.vm_files = []
+    
+    if is_directory:
+      # Get all .vm files, with Sys.vm first
+      dir_path = Path(input_path)
+      all_files = sorted(dir_path.glob('*.vm'))
+      
+      # Separate Sys.vm and others
+      sys_files = [f for f in all_files if f.stem == 'Sys']
+      other_files = [f for f in all_files if f.stem != 'Sys']
+      
+      # Sys.vm should be first
+      self.vm_files = sys_files + other_files
+      
+      # Output file is directory name + .asm
+      output_name = dir_path.name
+      self.code_writer = CodeWriter(str(dir_path / output_name))
+    else:
+      self.vm_files = [Path(input_path)]
+      output_name = Path(input_path).stem
+      self.code_writer = CodeWriter(output_name)
 
   def start(self):
-    while self.parser.hasMoreLines():
-      command_type = self.parser.commandType()
+    # Write bootstrap code if directory
+    if self.is_directory:
+      self.code_writer.writeBootstrap()
+    
+    # Translate each file
+    for vm_file in self.vm_files:
+      self.translateFile(str(vm_file))
+    
+    self.code_writer.close()
+
+  def translateFile(self, file_path):
+    """Translate a single VM file."""
+    parser = Parser(file_path)
+    self.code_writer.setFileName(file_path)
+    
+    while parser.hasMoreLines():
+      command_type = parser.commandType()
       if command_type == CommandType.C_ARITHMETIC:
-        command = self.parser.arg1()
+        command = parser.arg1()
         self.code_writer.writeArithmetic(command)
       elif command_type in (CommandType.C_PUSH, CommandType.C_POP):
-        segment = self.parser.arg1()
-        index = self.parser.arg2()
+        segment = parser.arg1()
+        index = parser.arg2()
         self.code_writer.writePushPop(command_type.name, segment, index)
-      # elif command_type in (CommandType.C_LABEL, CommandType.C_GOTO, CommandType.C_IF, CommandType.C_FUNCTION, CommandType.C_CALL, CommandType.C_RETURN):
-      #   # Not implemented yet
-      #   pass
       elif command_type == CommandType.C_LABEL:
-        label = self.parser.arg1()
+        label = parser.arg1()
         self.code_writer.writeLabel(label)
       elif command_type == CommandType.C_GOTO:
-        label = self.parser.arg1()
+        label = parser.arg1()
         self.code_writer.writeGoto(label)
       elif command_type == CommandType.C_IF:
-        label = self.parser.arg1()
+        label = parser.arg1()
         self.code_writer.writeIf(label)
       elif command_type == CommandType.C_FUNCTION:
-        function_name = self.parser.arg1()
-        num_locals = self.parser.arg2()
+        function_name = parser.arg1()
+        num_locals = parser.arg2()
         self.code_writer.writeFunction(function_name, num_locals)
       elif command_type == CommandType.C_CALL:
-        function_name = self.parser.arg1()
-        num_args = self.parser.arg2()
+        function_name = parser.arg1()
+        num_args = parser.arg2()
         self.code_writer.writeCall(function_name, num_args)
       elif command_type == CommandType.C_RETURN:
         self.code_writer.writeReturn()
-        
-    self.code_writer.close()
+    
+    parser.close()
 
 
 def main():
-  print("main")
-
-# This is a test for parser
   if len(sys.argv) != 2:
-    print("Usage: VMTranslator.py <inputfile.vm>")
+    print("Usage: VMTranslator.py <inputfile.vm or directory>")
     return
+  
   input_path = sys.argv[1]
-
-  vmTranslator = VMTranslator(input_path)
+  path = Path(input_path)
+  
+  if path.is_dir():
+    # Directory mode - translate all .vm files with bootstrap
+    vmTranslator = VMTranslator(input_path, is_directory=True)
+  elif path.is_file() and path.suffix == '.vm':
+    # Single file mode - no bootstrap
+    vmTranslator = VMTranslator(input_path, is_directory=False)
+  else:
+    print("Error: Input must be a directory or a .vm file")
+    return
+  
   vmTranslator.start()
 
 if __name__=='__main__':
