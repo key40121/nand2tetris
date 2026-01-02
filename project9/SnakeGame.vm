@@ -4,7 +4,7 @@ function SnakeGame.new 0
     pop pointer 0
     push constant 0
     push constant 0
-    push constant 30
+    push constant 20
     call Snake.new 3
     pop this 0
     push constant 0
@@ -108,6 +108,10 @@ label SnakeGame_12
     if-goto SnakeGame_15
     push this 0
     call Snake.end 1
+    pop temp 0
+    push constant 0
+    push constant 0
+    call Output.moveCursor 2
     pop temp 0
     push constant 8
     call String.new 1

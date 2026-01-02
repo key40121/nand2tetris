@@ -3,7 +3,7 @@ class SnakeGame {
     field int direction_;
 
     constructor SnakeGame new() {
-        let snake_ = Snake.new(0, 0, 30);
+        let snake_ = Snake.new(0, 0, 20);
         let direction_ = 0; // initial state is no movement
         return this;
     }
@@ -38,7 +38,7 @@ class SnakeGame {
 
             if (snake_.getIsCollide()) {
                 do snake_.end();
-
+                do Output.moveCursor(0, 0);
                 do Output.printString("END GAME");
                 do Output.printString("PRESS S TO RESTART GAME");
 
