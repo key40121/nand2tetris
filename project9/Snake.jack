@@ -1,0 +1,86 @@
+class Snake {
+    field int x_, y_;
+    field int size_;
+    field int stride_;
+
+    constructor Snake new(int x, int y, int size) {
+        let x_ = x;
+        let y_ = y;
+        let size_ = size;
+        let stride_ = 2; // TWEAK THIS CONSTAN
+        do draw();
+        return this;
+    }
+
+    method void dispose() {
+        do Memory.deAlloc(this);
+        return;
+    }
+
+    method void draw() {
+        do Screen.setColor(true);
+        do Screen.drawRectangle(x_, y_, x_ + size_, y_ + size_);
+        return;
+    }
+
+    method void reset() {
+        do Screen.clearScreen();
+        return;
+    }
+
+    method boolean detectCollide() {
+        return true;
+    }
+
+    method void moveUp() {
+        if ((y_ - stride_) > -1) {
+            let x_ = x_;
+            let y_ = y_ - stride_;
+        } else {
+            let x_ = x_;
+            let y_ = 0;
+        }
+        do Screen.setColor(true);
+        do Screen.drawRectangle(x_, y_, x_ + size_, y_ + size_);
+        return;
+    }
+
+    method void moveDown() {
+        if ((y_ + stride_ + size_) < 256) {
+            let x_ = x_;
+            let y_ = y_ + stride_;
+        } else {
+            let x_ = x_;
+            let y_ = 256 - size_;
+        }
+        do Screen.setColor(true);
+        do Screen.drawRectangle(x_, y_, x_ + size_, y_ + size_);
+        return;
+    }
+
+    method void moveRight() {
+        if ((x_ + stride_ + size_) > 512) {
+            let x_ = 512 - size_;
+            let y_ = y_;
+        } else {
+            let x_ = x_ + stride_;
+            let y_ = y_;
+        }
+        do Screen.setColor(true);
+        do Screen.drawRectangle(x_, y_, x_ + size_, y_ + size_);
+        return;
+    }
+
+    method void moveLeft() {
+        if ((x_ - stride_) > -1) {
+            let x_ = x_ - stride_;
+            let y_ = y_;
+        } else {
+            let x_ = 0;
+            let y_ = y_;
+        }
+        do Screen.setColor(true);
+        do Screen.drawRectangle(x_, y_, x_ + size_, y_ + size_);
+        return;
+    }
+}

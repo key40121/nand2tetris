@@ -1,0 +1,111 @@
+function SnakeGame.new 0
+    push constant 2
+    call Memory.alloc 1
+    pop pointer 0
+    push constant 0
+    push constant 0
+    push constant 30
+    call Snake.new 3
+    pop this 0
+    push constant 0
+    pop this 1
+    push pointer 0
+    return
+function SnakeGame.dispose 0
+    push argument 0
+    pop pointer 0
+    push this 0
+    call Snake.dispose 1
+    pop temp 0
+    push pointer 0
+    call Memory.deAlloc 1
+    pop temp 0
+    push constant 0
+    return
+function SnakeGame.run 2
+    push argument 0
+    pop pointer 0
+    push constant 0
+    pop local 1
+label SnakeGame_0
+    push local 1
+    not
+    not
+    if-goto SnakeGame_1
+    call Keyboard.keyPressed 0
+    pop local 0
+label SnakeGame_2
+    push local 0
+    push constant 0
+    eq
+    not
+    if-goto SnakeGame_3
+    call Keyboard.keyPressed 0
+    pop local 0
+    push constant 1
+    call Sys.wait 1
+    pop temp 0
+    goto SnakeGame_2
+label SnakeGame_3
+    push local 0
+    push constant 81
+    eq
+    not
+    if-goto SnakeGame_5
+    push constant 1
+    neg
+    pop local 1
+    goto SnakeGame_4
+label SnakeGame_5
+label SnakeGame_4
+    push local 0
+    push constant 131
+    eq
+    not
+    if-goto SnakeGame_7
+    push this 0
+    call Snake.moveUp 1
+    pop temp 0
+    goto SnakeGame_6
+label SnakeGame_7
+label SnakeGame_6
+    push local 0
+    push constant 133
+    eq
+    not
+    if-goto SnakeGame_9
+    push this 0
+    call Snake.moveDown 1
+    pop temp 0
+    goto SnakeGame_8
+label SnakeGame_9
+label SnakeGame_8
+    push local 0
+    push constant 130
+    eq
+    not
+    if-goto SnakeGame_11
+    push this 0
+    call Snake.moveLeft 1
+    pop temp 0
+    goto SnakeGame_10
+label SnakeGame_11
+label SnakeGame_10
+    push local 0
+    push constant 132
+    eq
+    not
+    if-goto SnakeGame_13
+    push this 0
+    call Snake.moveRight 1
+    pop temp 0
+    goto SnakeGame_12
+label SnakeGame_13
+label SnakeGame_12
+    push constant 10
+    call Sys.wait 1
+    pop temp 0
+    goto SnakeGame_0
+label SnakeGame_1
+    push constant 0
+    return

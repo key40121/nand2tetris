@@ -1,0 +1,223 @@
+function Snake.new 0
+    push constant 4
+    call Memory.alloc 1
+    pop pointer 0
+    push argument 0
+    pop this 0
+    push argument 1
+    pop this 1
+    push argument 2
+    pop this 2
+    push constant 2
+    pop this 3
+    push pointer 0
+    call Snake.draw 1
+    pop temp 0
+    push pointer 0
+    return
+function Snake.dispose 0
+    push argument 0
+    pop pointer 0
+    push pointer 0
+    call Memory.deAlloc 1
+    pop temp 0
+    push constant 0
+    return
+function Snake.draw 0
+    push argument 0
+    pop pointer 0
+    push constant 1
+    neg
+    call Screen.setColor 1
+    pop temp 0
+    push this 0
+    push this 1
+    push this 0
+    push this 2
+    add
+    push this 1
+    push this 2
+    add
+    call Screen.drawRectangle 4
+    pop temp 0
+    push constant 0
+    return
+function Snake.reset 0
+    push argument 0
+    pop pointer 0
+    call Screen.clearScreen 0
+    pop temp 0
+    push constant 0
+    return
+function Snake.detectCollide 0
+    push argument 0
+    pop pointer 0
+    push constant 1
+    neg
+    return
+function Snake.moveUp 0
+    push argument 0
+    pop pointer 0
+    push this 1
+    push this 3
+    sub
+    push constant 1
+    neg
+    gt
+    not
+    if-goto Snake_1
+    push this 0
+    pop this 0
+    push this 1
+    push this 3
+    sub
+    pop this 1
+    goto Snake_0
+label Snake_1
+    push this 0
+    pop this 0
+    push constant 0
+    pop this 1
+label Snake_0
+    push constant 1
+    neg
+    call Screen.setColor 1
+    pop temp 0
+    push this 0
+    push this 1
+    push this 0
+    push this 2
+    add
+    push this 1
+    push this 2
+    add
+    call Screen.drawRectangle 4
+    pop temp 0
+    push constant 0
+    return
+function Snake.moveDown 0
+    push argument 0
+    pop pointer 0
+    push this 1
+    push this 3
+    add
+    push this 2
+    add
+    push constant 256
+    lt
+    not
+    if-goto Snake_3
+    push this 0
+    pop this 0
+    push this 1
+    push this 3
+    add
+    pop this 1
+    goto Snake_2
+label Snake_3
+    push this 0
+    pop this 0
+    push constant 256
+    push this 2
+    sub
+    pop this 1
+label Snake_2
+    push constant 1
+    neg
+    call Screen.setColor 1
+    pop temp 0
+    push this 0
+    push this 1
+    push this 0
+    push this 2
+    add
+    push this 1
+    push this 2
+    add
+    call Screen.drawRectangle 4
+    pop temp 0
+    push constant 0
+    return
+function Snake.moveRight 0
+    push argument 0
+    pop pointer 0
+    push this 0
+    push this 3
+    add
+    push this 2
+    add
+    push constant 512
+    gt
+    not
+    if-goto Snake_5
+    push constant 512
+    push this 2
+    sub
+    pop this 0
+    push this 1
+    pop this 1
+    goto Snake_4
+label Snake_5
+    push this 0
+    push this 3
+    add
+    pop this 0
+    push this 1
+    pop this 1
+label Snake_4
+    push constant 1
+    neg
+    call Screen.setColor 1
+    pop temp 0
+    push this 0
+    push this 1
+    push this 0
+    push this 2
+    add
+    push this 1
+    push this 2
+    add
+    call Screen.drawRectangle 4
+    pop temp 0
+    push constant 0
+    return
+function Snake.moveLeft 0
+    push argument 0
+    pop pointer 0
+    push this 0
+    push this 3
+    sub
+    push constant 1
+    neg
+    gt
+    not
+    if-goto Snake_7
+    push this 0
+    push this 3
+    sub
+    pop this 0
+    push this 1
+    pop this 1
+    goto Snake_6
+label Snake_7
+    push constant 0
+    pop this 0
+    push this 1
+    pop this 1
+label Snake_6
+    push constant 1
+    neg
+    call Screen.setColor 1
+    pop temp 0
+    push this 0
+    push this 1
+    push this 0
+    push this 2
+    add
+    push this 1
+    push this 2
+    add
+    call Screen.drawRectangle 4
+    pop temp 0
+    push constant 0
+    return
