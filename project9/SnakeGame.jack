@@ -23,9 +23,10 @@ class SnakeGame {
         // add sleep to avoid busy loop
         while (~running) {
             let key = Keyboard.keyPressed();
+
+            // while key is not pressed
             while (key = 0) {
                 let key = Keyboard.keyPressed();
-                // do nothing
                 do Sys.wait(1);
             }
 
@@ -34,6 +35,21 @@ class SnakeGame {
             if (key = 133) { do snake_.moveDown(); }   // down arrow
             if (key = 130) { do snake_.moveLeft(); }   // left arrow
             if (key = 132) { do snake_.moveRight(); }   // right arrow
+
+            if (snake_.getIsCollide()) {
+                do snake_.end();
+
+                do Output.printString("END GAME");
+                do Output.printString("PRESS S TO RESTART GAME");
+
+                // wait for s to be pressed
+                while (~(key = 115)) {
+                    let key = Keyboard.keyPressed();
+                    do Sys.wait(10);
+                }
+
+                do snake_.restart();
+            }
 
             do Sys.wait(10);
         }

@@ -2,12 +2,14 @@ class Snake {
     field int x_, y_;
     field int size_;
     field int stride_;
+    field boolean isCollide_;
 
     constructor Snake new(int x, int y, int size) {
         let x_ = x;
         let y_ = y;
         let size_ = size;
         let stride_ = 2; // TWEAK THIS CONSTAN
+        let isCollide_ = false;
         do draw();
         return this;
     }
@@ -23,23 +25,69 @@ class Snake {
         return;
     }
 
-    method void reset() {
+    method void end() {
+        do setIsCollide(false);
         do Screen.clearScreen();
         return;
     }
 
-    method boolean detectCollide() {
-        return true;
+    method void restart() {
+        do Screen.clearScreen();
+        let x_ = 0;
+        let y_ = 0;
+        do draw();
+        return;
+    }
+
+    method boolean getIsCollide() {
+        return isCollide_;
+    }
+
+    method void setIsCollide(boolean flag) {
+        let isCollide_ = flag;
+        return;
+    }
+
+    method boolean calcCollide(int x, int y) {
+        // convert x, y to address
+        var int baseAddress;
+        var int address;
+        var int bit;
+        var int peakVal;
+
+        var int mask;
+        var int i;
+
+        let baseAddress = 16384;
+        let bit = x - ((x / 16) * 16); // x % 16
+        let address = baseAddress + (y * 32) + (x / 16);
+
+        let peakVal = Memory.peek(address);
+
+        let mask = 1;
+        let i = 0;
+        while (i < bit) {
+            let mask = mask + mask;
+            let i = i + 1;
+        }
+
+        if ((peakVal & mask) = 0) {
+            return false;
+        } else {
+            return true;
+        }
     }
 
     method void moveUp() {
-        if ((y_ - stride_) > -1) {
+        if ((y_ - stride_) > -1) { // >= 0
             let x_ = x_;
             let y_ = y_ - stride_;
         } else {
             let x_ = x_;
             let y_ = 0;
         }
+
+        do setIsCollide(calcCollide(x_, y_));
         do Screen.setColor(true);
         do Screen.drawRectangle(x_, y_, x_ + size_, y_ + size_);
         return;

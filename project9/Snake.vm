@@ -1,5 +1,5 @@
 function Snake.new 0
-    push constant 4
+    push constant 5
     call Memory.alloc 1
     pop pointer 0
     push argument 0
@@ -10,6 +10,8 @@ function Snake.new 0
     pop this 2
     push constant 2
     pop this 3
+    push constant 0
+    pop this 4
     push pointer 0
     call Snake.draw 1
     pop temp 0
@@ -42,19 +44,104 @@ function Snake.draw 0
     pop temp 0
     push constant 0
     return
-function Snake.reset 0
+function Snake.end 0
+    push argument 0
+    pop pointer 0
+    push pointer 0
+    push constant 0
+    call Snake.setIsCollide 2
+    pop temp 0
+    call Screen.clearScreen 0
+    pop temp 0
+    push constant 0
+    return
+function Snake.restart 0
     push argument 0
     pop pointer 0
     call Screen.clearScreen 0
     pop temp 0
     push constant 0
+    pop this 0
+    push constant 0
+    pop this 1
+    push pointer 0
+    call Snake.draw 1
+    pop temp 0
+    push constant 0
     return
-function Snake.detectCollide 0
+function Snake.getIsCollide 0
     push argument 0
     pop pointer 0
+    push this 4
+    return
+function Snake.setIsCollide 0
+    push argument 0
+    pop pointer 0
+    push argument 1
+    pop this 4
+    push constant 0
+    return
+function Snake.calcCollide 6
+    push argument 0
+    pop pointer 0
+    push constant 16384
+    pop local 0
+    push argument 1
+    push argument 1
+    push constant 16
+    call Math.divide 2
+    push constant 16
+    call Math.multiply 2
+    sub
+    pop local 2
+    push local 0
+    push argument 2
+    push constant 32
+    call Math.multiply 2
+    add
+    push argument 1
+    push constant 16
+    call Math.divide 2
+    add
+    pop local 1
+    push local 1
+    call Memory.peek 1
+    pop local 3
+    push constant 1
+    pop local 4
+    push constant 0
+    pop local 5
+label Snake_0
+    push local 5
+    push local 2
+    lt
+    not
+    if-goto Snake_1
+    push local 4
+    push local 4
+    add
+    pop local 4
+    push local 5
+    push constant 1
+    add
+    pop local 5
+    goto Snake_0
+label Snake_1
+    push local 3
+    push local 4
+    and
+    push constant 0
+    eq
+    not
+    if-goto Snake_3
+    push constant 0
+    return
+    goto Snake_2
+label Snake_3
     push constant 1
     neg
     return
+label Snake_2
 function Snake.moveUp 0
     push argument 0
     pop pointer 0
@@ -65,20 +152,27 @@ function Snake.moveUp 0
     neg
     gt
     not
-    if-goto Snake_1
+    if-goto Snake_5
     push this 0
     pop this 0
     push this 1
     push this 3
     sub
     pop this 1
-    goto Snake_0
-label Snake_1
+    goto Snake_4
+label Snake_5
     push this 0
     pop this 0
     push constant 0
     pop this 1
-label Snake_0
+label Snake_4
+    push pointer 0
+    push pointer 0
+    push this 0
+    push this 1
+    call Snake.calcCollide 3
+    call Snake.setIsCollide 2
+    pop temp 0
     push constant 1
     neg
     call Screen.setColor 1
@@ -106,22 +200,22 @@ function Snake.moveDown 0
     push constant 256
     lt
     not
-    if-goto Snake_3
+    if-goto Snake_7
     push this 0
     pop this 0
     push this 1
     push this 3
     add
     pop this 1
-    goto Snake_2
-label Snake_3
+    goto Snake_6
+label Snake_7
     push this 0
     pop this 0
     push constant 256
     push this 2
     sub
     pop this 1
-label Snake_2
+label Snake_6
     push constant 1
     neg
     call Screen.setColor 1
@@ -149,22 +243,22 @@ function Snake.moveRight 0
     push constant 512
     gt
     not
-    if-goto Snake_5
+    if-goto Snake_9
     push constant 512
     push this 2
     sub
     pop this 0
     push this 1
     pop this 1
-    goto Snake_4
-label Snake_5
+    goto Snake_8
+label Snake_9
     push this 0
     push this 3
     add
     pop this 0
     push this 1
     pop this 1
-label Snake_4
+label Snake_8
     push constant 1
     neg
     call Screen.setColor 1
@@ -191,20 +285,20 @@ function Snake.moveLeft 0
     neg
     gt
     not
-    if-goto Snake_7
+    if-goto Snake_11
     push this 0
     push this 3
     sub
     pop this 0
     push this 1
     pop this 1
-    goto Snake_6
-label Snake_7
+    goto Snake_10
+label Snake_11
     push constant 0
     pop this 0
     push this 1
     pop this 1
-label Snake_6
+label Snake_10
     push constant 1
     neg
     call Screen.setColor 1
