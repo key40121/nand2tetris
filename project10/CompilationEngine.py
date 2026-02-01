@@ -208,9 +208,20 @@ class CompilationEngine:
         self.indent_level += 1
         self.write(f"<keyword> {self.tokenizer.keyword()} </keyword>")  # 'do'
         self.tokenizer.advance()
-        self.compile_expression()
-        self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # ';'
+        self.write(f"<identifier> {self.tokenizer.identifier()} </identifier>")  # subroutineName or className or varName
         self.tokenizer.advance()
+        if self.tokenizer.token_type() == JackTokenizer.TokenType.SYMBOL and self.tokenizer.symbol() == '.':
+            self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # '.'
+            self.tokenizer.advance()
+            self.write(f"<identifier> {self.tokenizer.identifier()} </identifier>")  # subroutineName
+            self.tokenizer.advance()
+        self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # '('
+        self.tokenizer.advance()
+        self.compile_expression_list()
+        self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # ')'
+        self.tokenizer.advance()  # consume ')'
+        self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # ';'
+        self.tokenizer.advance()  # consume ';'
         self.indent_level -= 1
         self.write("</doStatement>")
         return
@@ -220,7 +231,8 @@ class CompilationEngine:
         self.indent_level += 1
         self.write(f"<keyword> {self.tokenizer.keyword()} </keyword>")  # 'return'
         self.tokenizer.advance()
-        if self.tokenizer.token_type() != 'symbol' or self.tokenizer.symbol() != ';':
+        # If the next token is not the symbol ';', there is an expression to compile
+        if not (self.tokenizer.token_type() == JackTokenizer.TokenType.SYMBOL and self.tokenizer.symbol() == ';'):
             self.compile_expression()
         self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # ';'
         self.tokenizer.advance()
@@ -244,25 +256,26 @@ class CompilationEngine:
         self.write("<term>")
         self.indent_level += 1
         token_type = self.tokenizer.token_type()
-        if token_type == 'int_const':
+        
+        if token_type == JackTokenizer.TokenType.INT_CONST:
             self.write(f"<integerConstant> {self.tokenizer.int_val()} </integerConstant>")
             self.tokenizer.advance()
-        elif token_type == 'string_const':
+        elif token_type == JackTokenizer.TokenType.STRING_CONST:
             self.write(f"<stringConstant> {self.tokenizer.string_val()} </stringConstant>")
             self.tokenizer.advance()
-        elif token_type == 'keyword':
+        elif token_type == JackTokenizer.TokenType.KEYWORD:
             self.write(f"<keyword> {self.tokenizer.keyword()} </keyword>")
             self.tokenizer.advance()
-        elif token_type == 'identifier':
+        elif token_type == JackTokenizer.TokenType.IDENTIFIER:
             self.write(f"<identifier> {self.tokenizer.identifier()} </identifier>")
             self.tokenizer.advance()
-            if self.tokenizer.token_type() == 'symbol' and self.tokenizer.symbol() == '[':
+            if self.tokenizer.token_type() == JackTokenizer.TokenType.SYMBOL and self.tokenizer.symbol() == '[':
                 self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # '['
                 self.tokenizer.advance()
                 self.compile_expression()
                 self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # ']'
                 self.tokenizer.advance()
-            elif self.tokenizer.token_type() == 'symbol' and self.tokenizer.symbol() in ('(', '.'):
+            elif self.tokenizer.token_type() == JackTokenizer.TokenType.SYMBOL and self.tokenizer.symbol() in ('(', '.'):
                 if self.tokenizer.symbol() == '.':
                     self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # '.'
                     self.tokenizer.advance()
@@ -273,19 +286,30 @@ class CompilationEngine:
                 self.compile_expression_list()
                 self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # ')'
                 self.tokenizer.advance()
-        elif token_type == 'symbol' and self.tokenizer.symbol() == '(':
+        elif token_type == JackTokenizer.TokenType.SYMBOL and self.tokenizer.symbol() == '(':
             self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # '('
             self.tokenizer.advance()
             self.compile_expression()
             self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # ')'
             self.tokenizer.advance()
-        elif token_type == 'symbol' and self.tokenizer.symbol() in ('-', '~'):
+        elif token_type == JackTokenizer.TokenType.SYMBOL and self.tokenizer.symbol() in ('-', '~'):
             self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # unaryOp
             self.tokenizer.advance()
             self.compile_term()
+        
         self.indent_level -= 1
         self.write("</term>")
         return
     
     def compile_expression_list(self):
+        self.write("<expressionList>")
+        self.indent_level += 1
+        if self.tokenizer.token_type() != JackTokenizer.TokenType.SYMBOL or self.tokenizer.symbol() != ')':
+            self.compile_expression()
+            while self.tokenizer.token_type() == JackTokenizer.TokenType.SYMBOL and self.tokenizer.symbol() == ',':
+                self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # ','
+                self.tokenizer.advance()
+                self.compile_expression()
+        self.indent_level -= 1
+        self.write("</expressionList>")
         return
