@@ -1,0 +1,569 @@
+<class>
+  <keyword> class </keyword>
+  <identifier> Square </identifier>
+  <symbol> { </symbol>
+  <classVarDec>
+    <keyword> field </keyword>
+    <keyword> int </keyword>
+    <identifier> x </identifier>
+    <symbol> , </symbol>
+    <identifier> y </identifier>
+    <symbol> ; </symbol>
+  </classVarDec>
+  <classVarDec>
+    <keyword> field </keyword>
+    <keyword> int </keyword>
+    <identifier> size </identifier>
+    <symbol> ; </symbol>
+  </classVarDec>
+  <subroutineDec>
+    <keyword> constructor </keyword>
+    <keyword> None </keyword>
+    <identifier> new </identifier>
+    <symbol> ( </symbol>
+    <parameterList>
+      <keyword> int </keyword>
+      <identifier> Ax </identifier>
+      <symbol> , </symbol>
+      <keyword> int </keyword>
+      <identifier> Ay </identifier>
+      <symbol> , </symbol>
+      <keyword> int </keyword>
+      <identifier> Asize </identifier>
+    </parameterList>
+    <symbol> ) </symbol>
+    <subroutineBody>
+      <symbol> { </symbol>
+      <statements>
+        <letStatement>
+          <keyword> let </keyword>
+          <identifier> x </identifier>
+          <symbol> = </symbol>
+          <expression>
+            <term>
+            </term>
+          </expression>
+          <symbol> None </symbol>
+        </letStatement>
+      </statements>
+      <symbol> ; </symbol>
+    </subroutineBody>
+  </subroutineDec>
+  <symbol> None </symbol>
+</class>
+<class>
+  <keyword> None </keyword>
+  <identifier> Ay </identifier>
+  <symbol> ; </symbol>
+  <symbol> None </symbol>
+</class>
+<class>
+  <keyword> None </keyword>
+  <identifier> Asize </identifier>
+  <symbol> ; </symbol>
+  <symbol> None </symbol>
+</class>
+<class>
+  <keyword> None </keyword>
+  <identifier> None </identifier>
+  <symbol> ; </symbol>
+  <symbol> None </symbol>
+</class>
+<class>
+  <keyword> None </keyword>
+  <identifier> None </identifier>
+  <symbol> None </symbol>
+  <symbol> None </symbol>
+</class>
+<class>
+  <keyword> None </keyword>
+  <identifier> None </identifier>
+  <symbol> { </symbol>
+  <symbol> None </symbol>
+</class>
+<class>
+  <keyword> None </keyword>
+  <identifier> deAlloc </identifier>
+  <symbol> ( </symbol>
+  <symbol> None </symbol>
+</class>
+<class>
+  <keyword> None </keyword>
+  <identifier> None </identifier>
+  <symbol> ; </symbol>
+  <symbol> } </symbol>
+</class>
+<class>
+  <keyword> void </keyword>
+  <identifier> draw </identifier>
+  <symbol> ( </symbol>
+  <symbol> ) </symbol>
+</class>
+<class>
+  <keyword> do </keyword>
+  <identifier> Screen </identifier>
+  <symbol> . </symbol>
+  <symbol> None </symbol>
+</class>
+<class>
+  <keyword> None </keyword>
+  <identifier> None </identifier>
+  <symbol> ; </symbol>
+  <symbol> None </symbol>
+</class>
+<class>
+  <keyword> None </keyword>
+  <identifier> drawRectangle </identifier>
+  <symbol> ( </symbol>
+  <symbol> None </symbol>
+</class>
+<class>
+  <keyword> None </keyword>
+  <identifier> None </identifier>
+  <symbol> None </symbol>
+  <symbol> , </symbol>
+</class>
+<class>
+  <keyword> None </keyword>
+  <identifier> None </identifier>
+  <symbol> None </symbol>
+  <symbol> ; </symbol>
+</class>
+<class>
+  <keyword> method </keyword>
+  <identifier> None </identifier>
+  <symbol> None </symbol>
+  <symbol> ( </symbol>
+</class>
+<class>
+  <keyword> None </keyword>
+  <identifier> None </identifier>
+  <symbol> None </symbol>
+  <symbol> . </symbol>
+</class>
+<class>
+  <keyword> None </keyword>
+  <identifier> x </identifier>
+  <symbol> ) </symbol>
+  <symbol> ; </symbol>
+</class>
+<class>
+  <keyword> None </keyword>
+  <identifier> None </identifier>
+  <symbol> None </symbol>
+  <symbol> ( </symbol>
+</class>
+<class>
+  <keyword> None </keyword>
+  <identifier> y </identifier>
+  <symbol> , </symbol>
+  <symbol> None </symbol>
+</class>
+<class>
+  <keyword> None </keyword>
+  <identifier> None </identifier>
+  <symbol> ; </symbol>
+  <symbol> None </symbol>
+</class>
+<class>
+  <keyword> None </keyword>
+  <identifier> None </identifier>
+  <symbol> None </symbol>
+  <symbol> None </symbol>
+</class>
+<class>
+  <keyword> None </keyword>
+  <identifier> None </identifier>
+  <symbol> None </symbol>
+  <symbol> ( </symbol>
+</class>
+<class>
+  <keyword> None </keyword>
+  <identifier> None </identifier>
+  <symbol> None </symbol>
+  <symbol> None </symbol>
+</class>
+<class>
+  <keyword> None </keyword>
+  <identifier> None </identifier>
+  <symbol> None </symbol>
+  <symbol> None </symbol>
+</class>
+<class>
+  <keyword> None </keyword>
+  <identifier> None </identifier>
+  <symbol> None </symbol>
+  <symbol> None </symbol>
+</class>
+<class>
+  <keyword> None </keyword>
+  <identifier> None </identifier>
+  <symbol> } </symbol>
+  <symbol> None </symbol>
+</class>
+<class>
+  <keyword> None </keyword>
+  <identifier> None </identifier>
+  <symbol> None </symbol>
+  <symbol> None </symbol>
+</class>
+<class>
+  <keyword> None </keyword>
+  <identifier> None </identifier>
+  <symbol> None </symbol>
+  <symbol> ( </symbol>
+</class>
+<class>
+  <keyword> None </keyword>
+  <identifier> None </identifier>
+  <symbol> None </symbol>
+  <symbol> None </symbol>
+</class>
+<class>
+  <keyword> None </keyword>
+  <identifier> None </identifier>
+  <symbol> None </symbol>
+  <symbol> None </symbol>
+</class>
+<class>
+  <keyword> None </keyword>
+  <identifier> None </identifier>
+  <symbol> None </symbol>
+  <symbol> None </symbol>
+</class>
+<class>
+  <keyword> None </keyword>
+  <identifier> None </identifier>
+  <symbol> } </symbol>
+  <symbol> None </symbol>
+</class>
+<class>
+  <keyword> None </keyword>
+  <identifier> None </identifier>
+  <symbol> None </symbol>
+  <symbol> None </symbol>
+</class>
+<class>
+  <keyword> None </keyword>
+  <identifier> None </identifier>
+  <symbol> None </symbol>
+  <symbol> ( </symbol>
+</class>
+<class>
+  <keyword> None </keyword>
+  <identifier> None </identifier>
+  <symbol> None </symbol>
+  <symbol> None </symbol>
+</class>
+<class>
+  <keyword> None </keyword>
+  <identifier> None </identifier>
+  <symbol> None </symbol>
+  <symbol> ) </symbol>
+</class>
+<class>
+  <keyword> do </keyword>
+  <identifier> Screen </identifier>
+  <symbol> . </symbol>
+  <symbol> None </symbol>
+</class>
+<class>
+  <keyword> None </keyword>
+  <identifier> None </identifier>
+  <symbol> None </symbol>
+  <symbol> , </symbol>
+</class>
+<class>
+  <keyword> None </keyword>
+  <identifier> y </identifier>
+  <symbol> ) </symbol>
+  <symbol> ; </symbol>
+</class>
+<class>
+  <keyword> None </keyword>
+  <identifier> None </identifier>
+  <symbol> None </symbol>
+  <symbol> ; </symbol>
+</class>
+<class>
+  <keyword> None </keyword>
+  <identifier> None </identifier>
+  <symbol> None </symbol>
+  <symbol> ( </symbol>
+</class>
+<class>
+  <keyword> None </keyword>
+  <identifier> None </identifier>
+  <symbol> None </symbol>
+  <symbol> None </symbol>
+</class>
+<class>
+  <keyword> None </keyword>
+  <identifier> None </identifier>
+  <symbol> None </symbol>
+  <symbol> , </symbol>
+</class>
+<class>
+  <keyword> None </keyword>
+  <identifier> x </identifier>
+  <symbol> , </symbol>
+  <symbol> None </symbol>
+</class>
+<class>
+  <keyword> None </keyword>
+  <identifier> None </identifier>
+  <symbol> None </symbol>
+  <symbol> ; </symbol>
+</class>
+<class>
+  <keyword> method </keyword>
+  <identifier> None </identifier>
+  <symbol> None </symbol>
+  <symbol> ( </symbol>
+</class>
+<class>
+  <keyword> None </keyword>
+  <identifier> None </identifier>
+  <symbol> ( </symbol>
+  <symbol> None </symbol>
+</class>
+<class>
+  <keyword> None </keyword>
+  <identifier> None </identifier>
+  <symbol> None </symbol>
+  <symbol> . </symbol>
+</class>
+<class>
+  <keyword> None </keyword>
+  <identifier> x </identifier>
+  <symbol> ) </symbol>
+  <symbol> ; </symbol>
+</class>
+<class>
+  <keyword> None </keyword>
+  <identifier> None </identifier>
+  <symbol> None </symbol>
+  <symbol> ( </symbol>
+</class>
+<class>
+  <keyword> None </keyword>
+  <identifier> y </identifier>
+  <symbol> , </symbol>
+  <symbol> None </symbol>
+</class>
+<class>
+  <keyword> None </keyword>
+  <identifier> None </identifier>
+  <symbol> ; </symbol>
+  <symbol> None </symbol>
+</class>
+<class>
+  <keyword> None </keyword>
+  <identifier> y </identifier>
+  <symbol> ; </symbol>
+  <symbol> None </symbol>
+</class>
+<class>
+  <keyword> None </keyword>
+  <identifier> setColor </identifier>
+  <symbol> ( </symbol>
+  <symbol> None </symbol>
+</class>
+<class>
+  <keyword> None </keyword>
+  <identifier> None </identifier>
+  <symbol> None </symbol>
+  <symbol> . </symbol>
+</class>
+<class>
+  <keyword> None </keyword>
+  <identifier> x </identifier>
+  <symbol> , </symbol>
+  <symbol> None </symbol>
+</class>
+<class>
+  <keyword> None </keyword>
+  <identifier> None </identifier>
+  <symbol> None </symbol>
+  <symbol> ) </symbol>
+</class>
+<class>
+  <keyword> None </keyword>
+  <identifier> None </identifier>
+  <symbol> ; </symbol>
+  <symbol> } </symbol>
+</class>
+<class>
+  <keyword> void </keyword>
+  <identifier> moveLeft </identifier>
+  <symbol> ( </symbol>
+  <symbol> ) </symbol>
+</class>
+<class>
+  <keyword> if </keyword>
+  <identifier> None </identifier>
+  <symbol> None </symbol>
+  <symbol> ) </symbol>
+</class>
+<class>
+  <keyword> do </keyword>
+  <identifier> Screen </identifier>
+  <symbol> . </symbol>
+  <symbol> None </symbol>
+</class>
+<class>
+  <keyword> None </keyword>
+  <identifier> None </identifier>
+  <symbol> ; </symbol>
+  <symbol> None </symbol>
+</class>
+<class>
+  <keyword> None </keyword>
+  <identifier> drawRectangle </identifier>
+  <symbol> ( </symbol>
+  <symbol> None </symbol>
+</class>
+<class>
+  <keyword> None </keyword>
+  <identifier> None </identifier>
+  <symbol> None </symbol>
+  <symbol> , </symbol>
+</class>
+<class>
+  <keyword> None </keyword>
+  <identifier> None </identifier>
+  <symbol> None </symbol>
+  <symbol> None </symbol>
+</class>
+<class>
+  <keyword> None </keyword>
+  <identifier> None </identifier>
+  <symbol> None </symbol>
+  <symbol> None </symbol>
+</class>
+<class>
+  <keyword> None </keyword>
+  <identifier> None </identifier>
+  <symbol> None </symbol>
+  <symbol> ) </symbol>
+</class>
+<class>
+  <keyword> do </keyword>
+  <identifier> Screen </identifier>
+  <symbol> . </symbol>
+  <symbol> None </symbol>
+</class>
+<class>
+  <keyword> None </keyword>
+  <identifier> None </identifier>
+  <symbol> None </symbol>
+  <symbol> , </symbol>
+</class>
+<class>
+  <keyword> None </keyword>
+  <identifier> y </identifier>
+  <symbol> ) </symbol>
+  <symbol> ; </symbol>
+</class>
+<class>
+  <keyword> return </keyword>
+  <identifier> None </identifier>
+  <symbol> } </symbol>
+  <subroutineDec>
+    <keyword> method </keyword>
+    <keyword> void </keyword>
+    <identifier> moveRight </identifier>
+    <symbol> ( </symbol>
+    <parameterList>
+    </parameterList>
+    <symbol> ) </symbol>
+    <subroutineBody>
+      <symbol> { </symbol>
+      <statements>
+        <ifStatement>
+          <keyword> if </keyword>
+          <symbol> ( </symbol>
+          <expression>
+            <term>
+            </term>
+          </expression>
+          <symbol> None </symbol>
+          <symbol> ) </symbol>
+          <statements>
+          </statements>
+          <symbol> { </symbol>
+        </ifStatement>
+        <doStatement>
+          <keyword> do </keyword>
+          <expression>
+            <term>
+            </term>
+          </expression>
+          <symbol> None </symbol>
+        </doStatement>
+      </statements>
+      <symbol> . </symbol>
+    </subroutineBody>
+  </subroutineDec>
+  <symbol> None </symbol>
+</class>
+<class>
+  <keyword> None </keyword>
+  <identifier> None </identifier>
+  <symbol> ; </symbol>
+  <symbol> None </symbol>
+</class>
+<class>
+  <keyword> None </keyword>
+  <identifier> drawRectangle </identifier>
+  <symbol> ( </symbol>
+  <symbol> None </symbol>
+</class>
+<class>
+  <keyword> None </keyword>
+  <identifier> None </identifier>
+  <symbol> None </symbol>
+  <symbol> , </symbol>
+</class>
+<class>
+  <keyword> None </keyword>
+  <identifier> None </identifier>
+  <symbol> None </symbol>
+  <symbol> None </symbol>
+</class>
+<class>
+  <keyword> None </keyword>
+  <identifier> None </identifier>
+  <symbol> None </symbol>
+  <symbol> None </symbol>
+</class>
+<class>
+  <keyword> None </keyword>
+  <identifier> None </identifier>
+  <symbol> None </symbol>
+  <symbol> ) </symbol>
+</class>
+<class>
+  <keyword> do </keyword>
+  <identifier> Screen </identifier>
+  <symbol> . </symbol>
+  <symbol> None </symbol>
+</class>
+<class>
+  <keyword> None </keyword>
+  <identifier> None </identifier>
+  <symbol> None </symbol>
+  <symbol> , </symbol>
+</class>
+<class>
+  <keyword> None </keyword>
+  <identifier> y </identifier>
+  <symbol> ) </symbol>
+  <symbol> ; </symbol>
+</class>
+<class>
+  <keyword> return </keyword>
+  <identifier> None </identifier>
+  <symbol> } </symbol>
+  <symbol> } </symbol>
+</class>

@@ -31,60 +31,61 @@
           <symbol> = </symbol>
           <expression>
             <term>
-            </expression>
-            <symbol> None </symbol>
-          </letStatement>
-        </statements>
-        <symbol> ; </symbol>
-      </subroutineBody>
-    </subroutineDec>
-    <symbol> None </symbol>
-  </class>
-  <class>
-    <keyword> None </keyword>
-    <identifier> run </identifier>
-    <symbol> ( </symbol>
-    <symbol> ) </symbol>
-  </class>
-  <class>
-    <keyword> do </keyword>
-    <identifier> game </identifier>
-    <symbol> . </symbol>
-    <symbol> None </symbol>
-  </class>
-  <class>
-    <keyword> None </keyword>
-    <identifier> None </identifier>
-    <symbol> None </symbol>
-    <symbol> ; </symbol>
-  </class>
-  <class>
-    <keyword> function </keyword>
-    <identifier> None </identifier>
-    <symbol> None </symbol>
-    <symbol> ( </symbol>
-  </class>
-  <class>
-    <keyword> None </keyword>
-    <identifier> None </identifier>
-    <symbol> None </symbol>
-    <symbol> None </symbol>
-  </class>
-  <class>
-    <keyword> if </keyword>
-    <identifier> None </identifier>
-    <symbol> None </symbol>
-    <symbol> ) </symbol>
-  </class>
-  <class>
-    <keyword> None </keyword>
-    <identifier> None </identifier>
-    <symbol> { </symbol>
-    <symbol> } </symbol>
-  </class>
-  <class>
-    <keyword> None </keyword>
-    <identifier> None </identifier>
-    <symbol> } </symbol>
-    <symbol> } </symbol>
-  </class>
+            </term>
+          </expression>
+          <symbol> None </symbol>
+        </letStatement>
+      </statements>
+      <symbol> ; </symbol>
+    </subroutineBody>
+  </subroutineDec>
+  <symbol> None </symbol>
+</class>
+<class>
+  <keyword> None </keyword>
+  <identifier> run </identifier>
+  <symbol> ( </symbol>
+  <symbol> ) </symbol>
+</class>
+<class>
+  <keyword> do </keyword>
+  <identifier> game </identifier>
+  <symbol> . </symbol>
+  <symbol> None </symbol>
+</class>
+<class>
+  <keyword> None </keyword>
+  <identifier> None </identifier>
+  <symbol> None </symbol>
+  <symbol> ; </symbol>
+</class>
+<class>
+  <keyword> function </keyword>
+  <identifier> None </identifier>
+  <symbol> None </symbol>
+  <symbol> ( </symbol>
+</class>
+<class>
+  <keyword> None </keyword>
+  <identifier> None </identifier>
+  <symbol> None </symbol>
+  <symbol> None </symbol>
+</class>
+<class>
+  <keyword> if </keyword>
+  <identifier> None </identifier>
+  <symbol> None </symbol>
+  <symbol> ) </symbol>
+</class>
+<class>
+  <keyword> None </keyword>
+  <identifier> None </identifier>
+  <symbol> { </symbol>
+  <symbol> } </symbol>
+</class>
+<class>
+  <keyword> None </keyword>
+  <identifier> None </identifier>
+  <symbol> } </symbol>
+  <symbol> } </symbol>
+</class>

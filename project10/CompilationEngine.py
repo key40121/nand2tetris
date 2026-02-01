@@ -283,6 +283,8 @@ class CompilationEngine:
             self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # unaryOp
             self.tokenizer.advance()
             self.compile_term()
+        self.indent_level -= 1
+        self.write("</term>")
         return
     
     def compile_expression_list(self):
