@@ -39,11 +39,11 @@ class JackTokenizer:
         This class handles tokenizing a Jack source file.
         """
         with open(input_file, 'r', encoding=encoding) as f:
-          self.file = f.read()
-        self.tokens = []
-        self.current_token = None
-        self.remove_comments_and_whitespace()
-        self.tokenize()
+            self.file = f.read()
+            self.tokens = []
+            self.current_token = None
+            self.remove_comments_and_whitespace()
+            self.tokenize()
 
     def remove_comments_and_whitespace(self):
         """
