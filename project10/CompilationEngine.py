@@ -31,21 +31,116 @@ class CompilationEngine:
         self.write("</class>")
       
     def compile_class_var_dec(self):
+        # static or field
+        self.write(f"<classVarDec>")
+        self.indent_level += 1
+        self.write(f"<keyword> {self.tokenizer.keyword()} </keyword>")  # 'static' or 'field'
+        self.tokenizer.advance()
+        self.write(f"<keyword> {self.tokenizer.keyword()} </keyword>")  # type
+        self.tokenizer.advance()
+        self.write(f"<identifier> {self.tokenizer.identifier()} </identifier>")  # varName
+        self.tokenizer.advance()
+        self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # ',' or ';'
+        while self.tokenizer.symbol() == ',':
+            self.tokenizer.advance()
+            self.write(f"<identifier> {self.tokenizer.identifier()} </identifier>")  # varName
+            self.tokenizer.advance()
+            self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # ',' or ';'
+        self.tokenizer.advance()  # skip ';'
+        self.indent_level -= 1
+        self.write(f"</classVarDec>")
+        self.indent_level -= 1
         return
     
     def compile_subroutine(self):
+        # constructor, function, or method
+        self.write("<subroutineDec>")
+        self.indent_level += 1
+        self.write(f"<keyword> {self.tokenizer.keyword()} </keyword>")  # 'constructor'/'function'/'method'
+        self.tokenizer.advance()
+        self.write(f"<keyword> {self.tokenizer.keyword()} </keyword>")  # 'void' or type
+        self.tokenizer.advance()
+        self.write(f"<identifier> {self.tokenizer.identifier()} </identifier>")  # subroutineName
+        self.tokenizer.advance()
+        self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # '('
+        self.tokenizer.advance()
+        self.compile_parameter_list()
+        self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # ')'
+        self.tokenizer.advance()
+        self.compile_subroutine_body()
+        self.indent_level -= 1
+        self.write("</subroutineDec>")
         return
     
     def compile_parameter_list(self):
+        self.write("<parameterList>")
+        self.indent_level += 1
+        if self.tokenizer.token_type() in [JackTokenizer.TokenType.KEYWORD, JackTokenizer.TokenType.IDENTIFIER]:
+            self.write(f"<keyword> {self.tokenizer.keyword()} </keyword>")  # type
+            self.tokenizer.advance()
+            self.write(f"<identifier> {self.tokenizer.identifier()} </identifier>")  # varName
+            self.tokenizer.advance()
+            while self.tokenizer.symbol() == ',':
+                self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # ','
+                self.tokenizer.advance()
+                self.write(f"<keyword> {self.tokenizer.keyword()} </keyword>")  # type
+                self.tokenizer.advance()
+                self.write(f"<identifier> {self.tokenizer.identifier()} </identifier>")  # varName
+                self.tokenizer.advance()
+        self.indent_level -= 1
+        self.write("</parameterList>")
         return
     
     def compile_subroutine_body(self):
+        self.write("<subroutineBody>")
+        self.indent_level += 1
+        self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # '{'
+        self.tokenizer.advance()
+        self.compile_statements()
+        self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # '}'
+        self.tokenizer.advance()
+        self.indent_level -= 1
+        self.write("</subroutineBody>")
         return
     
     def compile_var_dec(self):
+        self.write("<varDec>")
+        self.indent_level += 1
+        self.write(f"<keyword> {self.tokenizer.keyword()} </keyword>")  # 'var'
+        self.tokenizer.advance()
+        self.write(f"<keyword> {self.tokenizer.keyword()} </keyword>")  # type
+        self.tokenizer.advance()
+        self.write(f"<identifier> {self.tokenizer.identifier()} </identifier>")  # varName
+        self.tokenizer.advance()
+        self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # ',' or ';'
+        while self.tokenizer.symbol() == ',':
+            self.tokenizer.advance()
+            self.write(f"<identifier> {self.tokenizer.identifier()} </identifier>")  # varName
+            self.tokenizer.advance()
+            self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # ',' or ';'
+        self.tokenizer.advance()  # skip ';'
+        self.indent_level -= 1
+        self.write(f"</varDec>")
         return
     
     def compile_statements(self):
+        self.write("<statements>")
+        self.indent_level += 1
+        while self.tokenizer.token_type() == JackTokenizer.TokenType.KEYWORD and self.tokenizer.keyword() in ['let', 'if', 'while', 'do', 'return']:
+            if self.tokenizer.keyword() == 'let':
+                self.compile_let()
+            elif self.tokenizer.keyword() == 'if':
+                self.compile_if()
+            elif self.tokenizer.keyword() == 'while':
+                self.compile_while()
+            elif self.tokenizer.keyword() == 'do':
+                self.compile_do()
+            elif self.tokenizer.keyword() == 'return':
+                self.compile_return()
+            elif self.tokenizer.keyword() == 'var':
+                self.compile_var_dec()
+        self.indent_level -= 1
+        self.write("</statements>")
         return
     
     def compile_let(self):
