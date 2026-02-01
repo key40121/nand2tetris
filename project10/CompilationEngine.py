@@ -110,7 +110,11 @@ class CompilationEngine:
         self.indent_level += 1
         self.write(f"<keyword> {self.tokenizer.keyword()} </keyword>")  # 'var'
         self.tokenizer.advance()
-        self.write(f"<keyword> {self.tokenizer.keyword()} </keyword>")  # type
+        # Type can be keyword (int, boolean, void) or identifier (class name)
+        if self.tokenizer.token_type() == JackTokenizer.TokenType.KEYWORD:
+            self.write(f"<keyword> {self.tokenizer.keyword()} </keyword>")  # type
+        else:
+            self.write(f"<identifier> {self.tokenizer.identifier()} </identifier>")  # type (class name)
         self.tokenizer.advance()
         self.write(f"<identifier> {self.tokenizer.identifier()} </identifier>")  # varName
         self.tokenizer.advance()
@@ -150,7 +154,7 @@ class CompilationEngine:
         self.tokenizer.advance()
         self.write(f"<identifier> {self.tokenizer.identifier()} </identifier>")  # varName
         self.tokenizer.advance()
-        if self.tokenizer.token_type() == 'symbol' and self.tokenizer.symbol() == '[':
+        if self.tokenizer.token_type() == JackTokenizer.TokenType.SYMBOL and self.tokenizer.symbol() == '[':
             self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # '['
             self.tokenizer.advance()
             self.compile_expression()
@@ -244,7 +248,7 @@ class CompilationEngine:
         self.write("<expression>")
         self.indent_level += 1
         self.compile_term()
-        while self.tokenizer.token_type() == 'symbol' and self.tokenizer.symbol() in ('+', '-', '*', '/', '&', '|', '<', '>', '='):
+        while self.tokenizer.token_type() == JackTokenizer.TokenType.SYMBOL and self.tokenizer.symbol() in ('+', '-', '*', '/', '&', '|', '<', '>', '='):
             self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # op
             self.tokenizer.advance()
             self.compile_term()
