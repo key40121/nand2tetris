@@ -22,11 +22,12 @@ class CompilationEngine:
         self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # '{'
         self.tokenizer.advance()
 
-        while self.tokenizer.token_type() in JackTokenizer.TokenType.KEYWORD and self.tokenizer.keyword() in ['static', 'field']:
+        while self.tokenizer.token_type() == JackTokenizer.TokenType.KEYWORD and self.tokenizer.keyword() in ['static', 'field']:
             self.compile_class_var_dec()
-        while self.tokenizer.token_type() in JackTokenizer.TokenType.KEYWORD and self.tokenizer.keyword() in ['constructor', 'function', 'method']:
+        while self.tokenizer.token_type() == JackTokenizer.TokenType.KEYWORD and self.tokenizer.keyword() in ['constructor', 'function', 'method']:
             self.compile_subroutine()
         self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # '}'
+        self.tokenizer.advance()
         self.indent_level -= 1
         self.write("</class>")
       
@@ -49,7 +50,6 @@ class CompilationEngine:
         self.tokenizer.advance()  # skip ';'
         self.indent_level -= 1
         self.write(f"</classVarDec>")
-        self.indent_level -= 1
         return
     
     def compile_subroutine(self):
@@ -96,6 +96,8 @@ class CompilationEngine:
         self.indent_level += 1
         self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # '{'
         self.tokenizer.advance()
+        while self.tokenizer.token_type() == JackTokenizer.TokenType.KEYWORD and self.tokenizer.keyword() == 'var':
+            self.compile_var_dec()
         self.compile_statements()
         self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # '}'
         self.tokenizer.advance()
@@ -137,8 +139,6 @@ class CompilationEngine:
                 self.compile_do()
             elif self.tokenizer.keyword() == 'return':
                 self.compile_return()
-            elif self.tokenizer.keyword() == 'var':
-                self.compile_var_dec()
         self.indent_level -= 1
         self.write("</statements>")
         return
@@ -166,12 +166,53 @@ class CompilationEngine:
         return
     
     def compile_if(self):
+        self.write("<ifStatement>")
+        self.indent_level += 1
+        self.write(f"<keyword> {self.tokenizer.keyword()} </keyword>")  # 'if'
+        self.tokenizer.advance()
+        self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # '('
+        self.tokenizer.advance()
+        self.compile_expression()
+        self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  #
+        self.tokenizer.advance()
+        self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # '{'
+        self.tokenizer.advance()
+        self.compile_statements()
+        self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # '}'
+        self.tokenizer.advance()
+        self.indent_level -= 1
+        self.write("</ifStatement>")
         return
     
     def compile_while(self):
+        self.write("<whileStatement>")
+        self.indent_level += 1
+        self.write(f"<keyword> {self.tokenizer.keyword()} </keyword>")  # 'while'
+        self.tokenizer.advance()
+        self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # '('
+        self.tokenizer.advance()
+        self.compile_expression()
+        self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # ')'
+        self.tokenizer.advance()
+        self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  #
+        self.tokenizer.advance()
+        self.compile_statements()
+        self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # '}'
+        self.tokenizer.advance()
+        self.indent_level -= 1
+        self.write("</whileStatement>")
         return
   
     def compile_do(self):
+        self.write("<doStatement>")
+        self.indent_level += 1
+        self.write(f"<keyword> {self.tokenizer.keyword()} </keyword>")  # 'do'
+        self.tokenizer.advance()
+        self.compile_expression()
+        self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # ';'
+        self.tokenizer.advance()
+        self.indent_level -= 1
+        self.write("</doStatement>")
         return
     
     def compile_return(self):
@@ -188,6 +229,15 @@ class CompilationEngine:
         return
     
     def compile_expression(self):
+        self.write("<expression>")
+        self.indent_level += 1
+        self.compile_term()
+        while self.tokenizer.token_type() == 'symbol' and self.tokenizer.symbol() in ('+', '-', '*', '/', '&', '|', '<', '>', '='):
+            self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # op
+            self.tokenizer.advance()
+            self.compile_term()
+        self.indent_level -= 1
+        self.write("</expression>")
         return
     
     def compile_term(self):
