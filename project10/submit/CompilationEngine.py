@@ -264,14 +264,7 @@ class CompilationEngine:
         self.indent_level += 1
         self.compile_term()
         while self.tokenizer.token_type() == JackTokenizer.TokenType.SYMBOL and self.tokenizer.symbol() in ('+', '-', '*', '/', '&', '|', '<', '>', '='):
-            if self.tokenizer.symbol() == '<':
-                self.write(f"<symbol> &lt; </symbol>")  # op
-            elif self.tokenizer.symbol() == '>':
-                self.write(f"<symbol> &gt; </symbol>")  # op
-            elif self.tokenizer.symbol() == '&':
-                self.write(f"<symbol> &amp; </symbol>")  # op
-            else:
-                self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # op
+            self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # op
             self.tokenizer.advance()
             self.compile_term()
         self.indent_level -= 1
