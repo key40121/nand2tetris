@@ -4,7 +4,7 @@
   <symbol> { </symbol>
   <classVarDec>
     <keyword> field </keyword>
-    <keyword> None </keyword>
+    <identifier> Square </identifier>
     <identifier> square </identifier>
     <symbol> ; </symbol>
   </classVarDec>

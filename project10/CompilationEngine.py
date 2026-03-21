@@ -37,7 +37,10 @@ class CompilationEngine:
         self.indent_level += 1
         self.write(f"<keyword> {self.tokenizer.keyword()} </keyword>")  # 'static' or 'field'
         self.tokenizer.advance()
-        self.write(f"<keyword> {self.tokenizer.keyword()} </keyword>")  # type
+        if self.tokenizer.token_type() == JackTokenizer.TokenType.KEYWORD:
+            self.write(f"<keyword> {self.tokenizer.keyword()} </keyword>")  # type
+        else:
+            self.write(f"<identifier> {self.tokenizer.identifier()} </identifier>")  # type (class name)
         self.tokenizer.advance()
         self.write(f"<identifier> {self.tokenizer.identifier()} </identifier>")  # varName
         self.tokenizer.advance()
