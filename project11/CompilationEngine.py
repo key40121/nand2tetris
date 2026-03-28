@@ -1,10 +1,15 @@
 import sys
 import JackTokenizer
+import SymbolTable
+import VMWriter
 
 class CompilationEngine:
     def __init__(self, tokenizer, output_stream):
         self.tokenizer = tokenizer
         self.output_stream = output_stream
+        self.vm_writer = VMWriter.VMWriter(output_stream)
+        self.symbol_table_class = SymbolTable.SymbolTable()
+        self.symbol_table_subroutine = SymbolTable.SymbolTable()
         self.indent_level = 0
 
     def write(self, content):
@@ -12,6 +17,8 @@ class CompilationEngine:
         self.output_stream.write(f"{indent}{content}\n")
 
     def compile_class(self):
+        self.symbol_table_class.reset()
+        self.symbol_table_subroutine.reset()
         self.write("<class>")
         self.indent_level += 1
 
@@ -29,33 +36,45 @@ class CompilationEngine:
         self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # '}'
         self.tokenizer.advance()
         self.indent_level -= 1
+        self.symbol_table_class.show()  # for debugging
         self.write("</class>")
       
     def compile_class_var_dec(self):
         # static or field
+        name = []
         self.write(f"<classVarDec>")
         self.indent_level += 1
         self.write(f"<keyword> {self.tokenizer.keyword()} </keyword>")  # 'static' or 'field'
+        kind = self.tokenizer.keyword()  # for symbol table
         self.tokenizer.advance()
         if self.tokenizer.token_type() == JackTokenizer.TokenType.KEYWORD:
             self.write(f"<keyword> {self.tokenizer.keyword()} </keyword>")  # type
+            type = self.tokenizer.keyword()  # for symbol table
         else:
             self.write(f"<identifier> {self.tokenizer.identifier()} </identifier>")  # type (class name)
+            type = self.tokenizer.identifier()  # for symbol table
         self.tokenizer.advance()
         self.write(f"<identifier> {self.tokenizer.identifier()} </identifier>")  # varName
+        name.append(self.tokenizer.identifier())  # for symbol table
         self.tokenizer.advance()
         self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # ',' or ';'
         while self.tokenizer.symbol() == ',':
             self.tokenizer.advance()
             self.write(f"<identifier> {self.tokenizer.identifier()} </identifier>")  # varName
+            name.append(self.tokenizer.identifier())  # for symbol table
             self.tokenizer.advance()
             self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # ',' or ';'
         self.tokenizer.advance()  # skip ';'
         self.indent_level -= 1
         self.write(f"</classVarDec>")
+
+        # for symbol table
+        for (name) in name:
+            self.symbol_table_class.define(name, type, kind)
         return
     
     def compile_subroutine(self):
+        self.symbol_table_subroutine.reset()
         # constructor, function, or method
         self.write("<subroutineDec>")
         self.indent_level += 1

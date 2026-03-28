@@ -1,0 +1,67 @@
+
+class Segment:
+    CONSTANT = "constant"
+    ARGUMENT = "argument"
+    LOCAL = "local"
+    STATIC = "static"
+    THIS = "this"
+    THAT = "that"
+    POINTER = "pointer"
+    TEMP = "temp"
+
+class Command:
+    ADD = "add"
+    SUB = "sub"
+    NEG = "neg"
+    EQ = "eq"
+    GT = "gt"
+    LT = "lt"
+    AND = "and"
+    OR = "or"
+    NOT = "not"
+
+class VMWriter:
+    def __init__(self, output_file, encoding='utf-8'):
+        self.output_file = output_file
+        self.encoding = encoding
+
+    def writePush(self, segment):
+        """Writes a VM push command."""
+        return
+    
+    def writePop(self, segment):
+        """Writes a VM pop command."""
+        return
+    
+    def writeArithmetic(self, command):
+        """Writes a VM arithmetic command."""
+        return
+    
+    def writeLabel(self, label):
+        """Writes a VM label command."""
+        return
+    
+    def writeGoto(self, label):
+        """Writes a VM goto command."""
+        return
+    
+    def writeIf(self, label):
+        """Writes a VM if-goto command."""
+        return
+    
+    def writeCall(self, name, nArgs):
+        """Writes a VM call command."""
+        return
+    
+    def writeFunction(self, name, nLocals):
+        """Writes a VM function command."""
+        return
+    
+    def writeReturn(self):
+        """Writes a VM return command."""
+        return
+    
+    def close(self):        
+      """Closes the output file."""
+      self.output_file.close()
+      return
