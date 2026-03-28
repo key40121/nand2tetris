@@ -12,6 +12,9 @@ class SymbolTable:
 
     def reset(self):
         """Empties the symbol table, typically called when starting to compile a new subroutine."""
+        self.table.clear()
+        for key in self.index_counters:
+            self.index_counters[key] = 0
         return
 
     def define(self, name, type, kind):
