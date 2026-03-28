@@ -55,6 +55,7 @@ class VMWriter:
     
     def writeFunction(self, name, nLocals):
         """Writes a VM function command."""
+        print(f"function {name} {nLocals}", file=self.output_file)
         return
     
     def writeReturn(self):

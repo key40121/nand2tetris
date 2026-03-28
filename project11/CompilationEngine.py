@@ -11,10 +11,12 @@ class CompilationEngine:
         self.symbol_table_class = SymbolTable.SymbolTable()
         self.symbol_table_subroutine = SymbolTable.SymbolTable()
         self.indent_level = 0
+        self.class_name = None  # to keep track of the current class name for symbol table and code generation
+        self.label_count = 0  # for generating unique labels in if and while statements
 
     def write(self, content):
         indent = '  ' * self.indent_level
-        self.output_stream.write(f"{indent}{content}\n")
+        # self.output_stream.write(f"{indent}{content}\n")
 
     def compile_class(self):
         self.symbol_table_class.reset()
@@ -25,6 +27,7 @@ class CompilationEngine:
         self.write(f"<keyword> {self.tokenizer.keyword()} </keyword>")  # 'class'
         self.tokenizer.advance()
         self.write(f"<identifier> {self.tokenizer.identifier()} </identifier>")  # class name
+        self.class_name = self.tokenizer.identifier()  # for symbol table and code generation
         self.tokenizer.advance()
         self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # '{'
         self.tokenizer.advance()
@@ -36,6 +39,8 @@ class CompilationEngine:
         self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # '}'
         self.tokenizer.advance()
         self.indent_level -= 1
+
+        print("class symbol table")
         self.symbol_table_class.show()  # for debugging
         self.write("</class>")
       
@@ -76,6 +81,9 @@ class CompilationEngine:
     def compile_subroutine(self):
         self.symbol_table_subroutine.reset()
         # constructor, function, or method
+
+        function_name = None  # for VM code generation
+
         self.write("<subroutineDec>")
         self.indent_level += 1
         self.write(f"<keyword> {self.tokenizer.keyword()} </keyword>")  # 'constructor'/'function'/'method'
@@ -87,6 +95,7 @@ class CompilationEngine:
             self.write(f"<identifier> {self.tokenizer.identifier()} </identifier>")  # type (class name)
         self.tokenizer.advance()
         self.write(f"<identifier> {self.tokenizer.identifier()} </identifier>")  # subroutineName
+        function_name = self.tokenizer.identifier()
         self.tokenizer.advance()
         self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # '('
         self.tokenizer.advance()
@@ -96,22 +105,37 @@ class CompilationEngine:
         self.compile_subroutine_body()
         self.indent_level -= 1
         self.write("</subroutineDec>")
+
+        print("subroutine class table")
+        self.symbol_table_subroutine.show()  # for debugging
+
+        # for VM code generation, we need to know the number of local variables
+        # which we can get from the symbol table after compiling the subroutine body
+        self.vm_writer.writeFunction(f"{self.class_name}.{function_name}", self.symbol_table_subroutine.varCount('argument'))
+
         return
     
     def compile_parameter_list(self):
+        self.symbol_table_subroutine.define("this", self.class_name, 'argument')  # for methods, 'this' is the first argument
         self.write("<parameterList>")
         self.indent_level += 1
         if self.tokenizer.token_type() in [JackTokenizer.TokenType.KEYWORD, JackTokenizer.TokenType.IDENTIFIER]:
             self.write(f"<keyword> {self.tokenizer.keyword()} </keyword>")  # type
             self.tokenizer.advance()
+            type = self.tokenizer.keyword()
             self.write(f"<identifier> {self.tokenizer.identifier()} </identifier>")  # varName
+            varName = self.tokenizer.identifier()
+            self.symbol_table_subroutine.define(varName, type, 'argument')  # for symbol table
             self.tokenizer.advance()
             while self.tokenizer.symbol() == ',':
                 self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # ','
                 self.tokenizer.advance()
                 self.write(f"<keyword> {self.tokenizer.keyword()} </keyword>")  # type
                 self.tokenizer.advance()
+                type = self.tokenizer.keyword()
                 self.write(f"<identifier> {self.tokenizer.identifier()} </identifier>")  # varName
+                varName = self.tokenizer.identifier()
+                self.symbol_table_subroutine.define(varName, type, 'argument')  # for symbol table
                 self.tokenizer.advance()
         self.indent_level -= 1
         self.write("</parameterList>")
@@ -139,20 +163,28 @@ class CompilationEngine:
         # Type can be keyword (int, boolean, void) or identifier (class name)
         if self.tokenizer.token_type() == JackTokenizer.TokenType.KEYWORD:
             self.write(f"<keyword> {self.tokenizer.keyword()} </keyword>")  # type
+            type = self.tokenizer.keyword()  # for symbol table
         else:
             self.write(f"<identifier> {self.tokenizer.identifier()} </identifier>")  # type (class name)
+            type = self.tokenizer.identifier()  # for symbol table
+        name = []
         self.tokenizer.advance()
         self.write(f"<identifier> {self.tokenizer.identifier()} </identifier>")  # varName
+        name.append(self.tokenizer.identifier())  # for symbol table
         self.tokenizer.advance()
         self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # ',' or ';'
         while self.tokenizer.symbol() == ',':
             self.tokenizer.advance()
             self.write(f"<identifier> {self.tokenizer.identifier()} </identifier>")  # varName
+            name.append(self.tokenizer.identifier())  # for symbol table
             self.tokenizer.advance()
             self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # ',' or ';'
         self.tokenizer.advance()  # skip ';'
         self.indent_level -= 1
         self.write(f"</varDec>")
+        # for symbol table
+        for (name) in name:
+            self.symbol_table_subroutine.define(name, type, 'var')
         return
     
     def compile_statements(self):

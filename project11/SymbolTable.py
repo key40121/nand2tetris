@@ -6,7 +6,7 @@ class SymbolTable:
         self.index_counters = {
             'static': 0,
             'field': 0,
-            'arg': 0,
+            'argument': 0,
             'var': 0
         }
 
