@@ -102,7 +102,10 @@ class CompilationEngine:
         self.tokenizer.advance()
         self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # '('
         self.tokenizer.advance()
-        self.compile_parameter_list()
+        numargs = self.compile_parameter_list()
+         # for VM code generation, we need to know the number of local variables
+        # which we can get from the symbol table after compiling the subroutine body
+        self.vm_writer.writeFunction(f"{self.class_name}.{function_name}", numargs) # subtract 1 for 'this' argument
         self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # ')'
         self.tokenizer.advance()
         self.compile_subroutine_body()
@@ -112,10 +115,6 @@ class CompilationEngine:
         print("subroutine class table")
         self.symbol_table_subroutine.show()  # for debugging
 
-        # for VM code generation, we need to know the number of local variables
-        # which we can get from the symbol table after compiling the subroutine body
-        self.vm_writer.writeFunction(f"{self.class_name}.{function_name}", (self.symbol_table_subroutine.varCount('argument') - 1)) # subtract 1 for 'this' argument
-
         if function_return_type == 'void':
             self.vm_writer.writePush(VMWriter.Segment.CONSTANT, 0)  # push dummy value for void return
 
@@ -123,6 +122,7 @@ class CompilationEngine:
         return
     
     def compile_parameter_list(self):
+        numArgs = 0
         self.symbol_table_subroutine.define("this", self.class_name, 'argument')  # for methods, 'this' is the first argument
         self.write("<parameterList>")
         self.indent_level += 1
@@ -133,8 +133,10 @@ class CompilationEngine:
             self.write(f"<identifier> {self.tokenizer.identifier()} </identifier>")  # varName
             varName = self.tokenizer.identifier()
             self.symbol_table_subroutine.define(varName, type, 'argument')  # for symbol table
+            numArgs += 1
             self.tokenizer.advance()
             while self.tokenizer.symbol() == ',':
+                numArgs += 1
                 self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # ','
                 self.tokenizer.advance()
                 self.write(f"<keyword> {self.tokenizer.keyword()} </keyword>")  # type
@@ -146,7 +148,7 @@ class CompilationEngine:
                 self.tokenizer.advance()
         self.indent_level -= 1
         self.write("</parameterList>")
-        return
+        return numArgs
     
     def compile_subroutine_body(self):
         self.write("<subroutineBody>")
@@ -289,21 +291,27 @@ class CompilationEngine:
         self.write(f"<keyword> {self.tokenizer.keyword()} </keyword>")  # 'do'
         self.tokenizer.advance()
         self.write(f"<identifier> {self.tokenizer.identifier()} </identifier>")  # subroutineName or className or varName
+        name = self.tokenizer.identifier()  # for VM code generation
+        subroutine_name = None  # for VM code generation
         self.tokenizer.advance()
         if self.tokenizer.token_type() == JackTokenizer.TokenType.SYMBOL and self.tokenizer.symbol() == '.':
             self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # '.'
             self.tokenizer.advance()
             self.write(f"<identifier> {self.tokenizer.identifier()} </identifier>")  # subroutineName
+            subroutine_name = self.tokenizer.identifier()  # for VM code generation
             self.tokenizer.advance()
         self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # '('
         self.tokenizer.advance()
-        self.compile_expression_list()
+        numargs = self.compile_expression_list()
         self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # ')'
         self.tokenizer.advance()  # consume ')'
         self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # ';'
         self.tokenizer.advance()  # consume ';'
         self.indent_level -= 1
         self.write("</doStatement>")
+
+        self.vm_writer.writeCall(f"{name}.{subroutine_name}", numargs)  # for VM code generation
+        self.vm_writer.writePop(VMWriter.Segment.TEMP, 0)  # discard return value of do statement
         return
     
     def compile_return(self):
@@ -324,6 +332,7 @@ class CompilationEngine:
         self.write("<expression>")
         self.indent_level += 1
         self.compile_term()
+        op = []
         while self.tokenizer.token_type() == JackTokenizer.TokenType.SYMBOL and self.tokenizer.symbol() in ('+', '-', '*', '/', '&', '|', '<', '>', '='):
             if self.tokenizer.symbol() == '<':
                 self.write(f"<symbol> &lt; </symbol>")  # op
@@ -333,8 +342,28 @@ class CompilationEngine:
                 self.write(f"<symbol> &amp; </symbol>")  # op
             else:
                 self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # op
+            op.append(self.tokenizer.symbol())  # for VM code generation
             self.tokenizer.advance()
             self.compile_term()
+            for (op) in op:
+                if op == '+':
+                    self.vm_writer.writeArithmetic(VMWriter.Command.ADD)
+                elif op == '-':
+                    self.vm_writer.writeArithmetic(VMWriter.Command.SUB)
+                elif op == '*':
+                    self.vm_writer.writeCall('Math.multiply', 2)
+                elif op == '/':
+                    self.vm_writer.writeCall('Math.divide', 2)
+                elif op == '&':
+                    self.vm_writer.writeArithmetic(VMWriter.Command.AND)
+                elif op == '|':
+                    self.vm_writer.writeArithmetic(VMWriter.Command.OR)
+                elif op == '<':
+                    self.vm_writer.writeArithmetic(VMWriter.Command.LT)
+                elif op == '>':
+                    self.vm_writer.writeArithmetic(VMWriter.Command.GT)
+                elif op == '=':
+                    self.vm_writer.writeArithmetic(VMWriter.Command.EQ)
         self.indent_level -= 1
         self.write("</expression>")
         return
@@ -346,9 +375,11 @@ class CompilationEngine:
         
         if token_type == JackTokenizer.TokenType.INT_CONST:
             self.write(f"<integerConstant> {self.tokenizer.int_val()} </integerConstant>")
+            self.vm_writer.writePush(VMWriter.Segment.CONSTANT, self.tokenizer.int_val())
             self.tokenizer.advance()
         elif token_type == JackTokenizer.TokenType.STRING_CONST:
             self.write(f"<stringConstant> {self.tokenizer.string_val()} </stringConstant>")
+            self.vm_writer.writePush(VMWriter.Segment.CONSTANT, self.tokenizer.string_val())
             self.tokenizer.advance()
         elif token_type == JackTokenizer.TokenType.KEYWORD:
             self.write(f"<keyword> {self.tokenizer.keyword()} </keyword>")
@@ -389,14 +420,16 @@ class CompilationEngine:
         return
     
     def compile_expression_list(self):
+        numargs = 0
         self.write("<expressionList>")
         self.indent_level += 1
         if self.tokenizer.token_type() != JackTokenizer.TokenType.SYMBOL or self.tokenizer.symbol() != ')':
             self.compile_expression()
+            numargs += 1
             while self.tokenizer.token_type() == JackTokenizer.TokenType.SYMBOL and self.tokenizer.symbol() == ',':
                 self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # ','
                 self.tokenizer.advance()
                 self.compile_expression()
         self.indent_level -= 1
         self.write("</expressionList>")
-        return
+        return numargs

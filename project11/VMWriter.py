@@ -31,12 +31,14 @@ class VMWriter:
         self.output_file.write(f"{self.indent}push {segment} {index}\n")
         return
     
-    def writePop(self, segment):
+    def writePop(self, segment, index):
         """Writes a VM pop command."""
+        self.output_file.write(f"{self.indent}pop {segment} {index}\n")
         return
     
     def writeArithmetic(self, command):
         """Writes a VM arithmetic command."""
+        self.output_file.write(f"{self.indent}{command}\n")
         return
     
     def writeLabel(self, label):
@@ -53,6 +55,7 @@ class VMWriter:
     
     def writeCall(self, name, nArgs):
         """Writes a VM call command."""
+        self.output_file.write(f"{self.indent}call {name} {nArgs}\n")
         return
     
     def writeFunction(self, name, nLocals):
