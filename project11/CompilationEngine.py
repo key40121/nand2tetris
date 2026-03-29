@@ -83,6 +83,7 @@ class CompilationEngine:
         # constructor, function, or method
 
         function_name = None  # for VM code generation
+        function_return_type = None  # for VM code generation
 
         self.write("<subroutineDec>")
         self.indent_level += 1
@@ -91,8 +92,10 @@ class CompilationEngine:
         # Return type can be keyword (void, int, boolean) or identifier (class name)
         if self.tokenizer.token_type() == JackTokenizer.TokenType.KEYWORD:
             self.write(f"<keyword> {self.tokenizer.keyword()} </keyword>")  # 'void' or type
+            function_return_type = self.tokenizer.keyword() # for VM code generation
         else:
             self.write(f"<identifier> {self.tokenizer.identifier()} </identifier>")  # type (class name)
+            function_return_type = self.tokenizer.identifier()  # for VM code generation
         self.tokenizer.advance()
         self.write(f"<identifier> {self.tokenizer.identifier()} </identifier>")  # subroutineName
         function_name = self.tokenizer.identifier()
@@ -111,8 +114,12 @@ class CompilationEngine:
 
         # for VM code generation, we need to know the number of local variables
         # which we can get from the symbol table after compiling the subroutine body
-        self.vm_writer.writeFunction(f"{self.class_name}.{function_name}", self.symbol_table_subroutine.varCount('argument'))
+        self.vm_writer.writeFunction(f"{self.class_name}.{function_name}", (self.symbol_table_subroutine.varCount('argument') - 1)) # subtract 1 for 'this' argument
 
+        if function_return_type == 'void':
+            self.vm_writer.writePush(VMWriter.Segment.CONSTANT, 0)  # push dummy value for void return
+
+        self.vm_writer.writeReturn()
         return
     
     def compile_parameter_list(self):

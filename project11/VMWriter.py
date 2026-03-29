@@ -24,9 +24,11 @@ class VMWriter:
     def __init__(self, output_file, encoding='utf-8'):
         self.output_file = output_file
         self.encoding = encoding
+        self.indent =  "  "  # for pretty printing, not required by VM spec
 
-    def writePush(self, segment):
+    def writePush(self, segment, index):
         """Writes a VM push command."""
+        self.output_file.write(f"{self.indent}push {segment} {index}\n")
         return
     
     def writePop(self, segment):
@@ -60,6 +62,7 @@ class VMWriter:
     
     def writeReturn(self):
         """Writes a VM return command."""
+        self.output_file.write(f"{self.indent}return\n")
         return
     
     def close(self):        
