@@ -400,6 +400,7 @@ class CompilationEngine:
             self.tokenizer.advance()
         elif token_type == JackTokenizer.TokenType.IDENTIFIER:
             self.write(f"<identifier> {self.tokenizer.identifier()} </identifier>")
+            identifier_name = self.tokenizer.identifier()  #
             self.tokenizer.advance()
             if self.tokenizer.token_type() == JackTokenizer.TokenType.SYMBOL and self.tokenizer.symbol() == '[':
                 self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # '['
@@ -408,16 +409,21 @@ class CompilationEngine:
                 self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # ']'
                 self.tokenizer.advance()
             elif self.tokenizer.token_type() == JackTokenizer.TokenType.SYMBOL and self.tokenizer.symbol() in ('(', '.'):
+                # subroutine call
                 if self.tokenizer.symbol() == '.':
                     self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # '.'
                     self.tokenizer.advance()
                     self.write(f"<identifier> {self.tokenizer.identifier()} </identifier>")  # subroutineName
+                    subroutine_name = self.tokenizer.identifier()  # for VM code generation
                     self.tokenizer.advance()
                 self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # '('
                 self.tokenizer.advance()
-                self.compile_expression_list()
+                numArgs = self.compile_expression_list()
+                self.vm_writer.writeCall(f"{identifier_name}.{subroutine_name}", numArgs)  # for VM code generation, we will fix the number of arguments later after compiling the expression list
                 self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # ')'
                 self.tokenizer.advance()
+            else:
+                self.vm_writer.writePush(self.symbol_table_subroutine.kindOf(identifier_name), self.symbol_table_subroutine.indexOf(identifier_name))  # for VM code generation
         elif token_type == JackTokenizer.TokenType.SYMBOL and self.tokenizer.symbol() == '(':
             self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # '('
             self.tokenizer.advance()
@@ -426,9 +432,12 @@ class CompilationEngine:
             self.tokenizer.advance()
         elif token_type == JackTokenizer.TokenType.SYMBOL and self.tokenizer.symbol() in ('-', '~'):
             self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # unaryOp
-            self.vm_writer.writeArithmetic(VMWriter.Command.NEG if self.tokenizer.symbol() == '-' else VMWriter.Command.NOT)  # for VM code generation
+            negExpression = self.tokenizer.symbol()  # for VM code generation
+             # for VM code generation, we need to compile the term first before writing the unary command
             self.tokenizer.advance()
             self.compile_term()
+
+            self.vm_writer.writeArithmetic(VMWriter.Command.NEG if negExpression == '-' else VMWriter.Command.NOT)  # for VM code generation
         
         self.indent_level -= 1
         self.write("</term>")
