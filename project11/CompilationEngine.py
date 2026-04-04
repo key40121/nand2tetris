@@ -258,8 +258,9 @@ class CompilationEngine:
         self.tokenizer.advance()
         self.compile_expression()
         self.label_count += 1
+        label_id = self.label_count  # for unique labels in if statements
         self.vm_writer.writeArithmetic(VMWriter.Command.NOT)  # if-goto expects true condition, so negate the expression result
-        self.vm_writer.writeIf(f"IF_FALSE{self.label_count}")
+        self.vm_writer.writeIf(f"IF_FALSE{label_id}")  # label for if false
         self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # ')'
         self.tokenizer.advance()
         self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # '{'
@@ -272,7 +273,7 @@ class CompilationEngine:
         if self.tokenizer.token_type() == JackTokenizer.TokenType.KEYWORD and self.tokenizer.keyword() == 'else':
             self.write(f"<keyword> {self.tokenizer.keyword()} </keyword>")  # 'else'
             self.tokenizer.advance()
-            self.vm_writer.writeLabel(f"IF_FALSE{self.label_count}")  # label for else clause
+            self.vm_writer.writeLabel(f"IF_FALSE{label_id}")  # label for else clause
             self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # '{'
             self.tokenizer.advance()
             self.compile_statements()
@@ -289,7 +290,8 @@ class CompilationEngine:
         self.write(f"<keyword> {self.tokenizer.keyword()} </keyword>")  # 'while'
         self.tokenizer.advance()
         self.label_count += 1
-        self.vm_writer.writeLabel(f"WHILE_EXP{self.label_count}")  # label for while expression
+        writeIndex = self.label_count  # for unique labels in while statements
+        self.vm_writer.writeLabel(f"WHILE_EXP{writeIndex}")  # label for while expression
         self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # '('
         self.tokenizer.advance()
         self.compile_expression()
@@ -306,7 +308,7 @@ class CompilationEngine:
         self.tokenizer.advance()
         self.indent_level -= 1
         self.write("</whileStatement>")
-        self.vm_writer.writeGoto(f"WHILE_EXP{self.label_count - 1}")  # go back to while expression
+        self.vm_writer.writeGoto(f"WHILE_EXP{writeIndex}")  # go back to while expression
         self.vm_writer.writeLabel(f"{whileFinishLabel}")  # label for while expression
         return
   
