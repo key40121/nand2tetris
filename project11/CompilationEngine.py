@@ -220,6 +220,7 @@ class CompilationEngine:
         self.write(f"<keyword> {self.tokenizer.keyword()} </keyword>")  # 'let'
         self.tokenizer.advance()
         self.write(f"<identifier> {self.tokenizer.identifier()} </identifier>")  # varName
+        varName = self.tokenizer.identifier()  # for VM code generation
         self.tokenizer.advance()
         if self.tokenizer.token_type() == JackTokenizer.TokenType.SYMBOL and self.tokenizer.symbol() == '[':
             self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # '['
@@ -233,6 +234,19 @@ class CompilationEngine:
         self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # ';'
         self.tokenizer.advance()
         self.indent_level -= 1
+        actual_kind = self.symbol_table_subroutine.kindOf(varName)
+        if actual_kind == 'argument':
+            segment = VMWriter.Segment.ARGUMENT
+        elif actual_kind == 'var':
+            segment = VMWriter.Segment.LOCAL
+        elif actual_kind == 'static':
+            segment = VMWriter.Segment.STATIC
+        elif actual_kind == 'field':
+            segment = VMWriter.Segment.THIS
+        else:
+            raise Exception(f"Undefined variable {varName}")
+        self.vm_writer.writePop(segment, self.symbol_table_subroutine.indexOf(varName))
+        print(f"let statement: pop {segment} {self.symbol_table_subroutine.indexOf(varName)}")  # for debugging
         self.write("</letStatement>")
         return
     
@@ -412,6 +426,7 @@ class CompilationEngine:
             self.tokenizer.advance()
         elif token_type == JackTokenizer.TokenType.SYMBOL and self.tokenizer.symbol() in ('-', '~'):
             self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # unaryOp
+            self.vm_writer.writeArithmetic(VMWriter.Command.NEG if self.tokenizer.symbol() == '-' else VMWriter.Command.NOT)  # for VM code generation
             self.tokenizer.advance()
             self.compile_term()
         
@@ -430,6 +445,7 @@ class CompilationEngine:
                 self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # ','
                 self.tokenizer.advance()
                 self.compile_expression()
+                numargs += 1
         self.indent_level -= 1
         self.write("</expressionList>")
         return numargs
