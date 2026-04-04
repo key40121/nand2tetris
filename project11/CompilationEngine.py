@@ -306,6 +306,7 @@ class CompilationEngine:
         self.tokenizer.advance()
         self.indent_level -= 1
         self.write("</whileStatement>")
+        self.vm_writer.writeGoto(f"WHILE_EXP{self.label_count - 1}")  # go back to while expression
         self.vm_writer.writeLabel(f"{whileFinishLabel}")  # label for while expression
         return
   

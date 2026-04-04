@@ -59,6 +59,7 @@ label IF_FALSE4
 label IF_FALSE4
   push constant 0
   pop local 2
+  goto WHILE_EXP3
 label WHILE_END2
   push constant 0
   return
@@ -97,6 +98,7 @@ label WHILE_EXP6
   push constant 1
   add
   pop argument 0
+  goto WHILE_EXP6
 label WHILE_END7
   push constant 0
   return
