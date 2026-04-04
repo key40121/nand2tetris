@@ -88,6 +88,7 @@ class CompilationEngine:
         self.write("<subroutineDec>")
         self.indent_level += 1
         self.write(f"<keyword> {self.tokenizer.keyword()} </keyword>")  # 'constructor'/'function'/'method'
+        function_type = self.tokenizer.keyword()  # for symbol table and code generation
         self.tokenizer.advance()
         # Return type can be keyword (void, int, boolean) or identifier (class name)
         if self.tokenizer.token_type() == JackTokenizer.TokenType.KEYWORD:
@@ -102,27 +103,25 @@ class CompilationEngine:
         self.tokenizer.advance()
         self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # '('
         self.tokenizer.advance()
-        numargs = self.compile_parameter_list()
+        numargs = self.compile_parameter_list(function_type)
          # for VM code generation, we need to know the number of local variables
         # which we can get from the symbol table after compiling the subroutine body
-        self.vm_writer.writeFunction(f"{self.class_name}.{function_name}", numargs) # subtract 1 for 'this' argument
+        # self.vm_writer.writeFunction(f"{self.class_name}.{function_name}", numLocals) # subtract 1 for 'this' argument
         self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # ')'
         self.tokenizer.advance()
-        self.compile_subroutine_body()
+        numLocals = self.compile_subroutine_body(function_name)
         self.indent_level -= 1
         self.write("</subroutineDec>")
 
         print("subroutine class table")
         self.symbol_table_subroutine.show()  # for debugging
 
-        # if function_return_type == 'void':
-        #     self.vm_writer.writePush(VMWriter.Segment.CONSTANT, 0)  # push dummy value for void return
-        #     self.vm_writer.writeReturn()
         return
     
-    def compile_parameter_list(self):
+    def compile_parameter_list(self, function_type):
         numArgs = 0
-        self.symbol_table_subroutine.define("this", self.class_name, 'argument')  # for methods, 'this' is the first argument
+        if function_type == 'method':
+            self.symbol_table_subroutine.define("this", self.class_name, 'argument')  # for methods, 'this' is the first argument
         self.write("<parameterList>")
         self.indent_level += 1
         if self.tokenizer.token_type() in [JackTokenizer.TokenType.KEYWORD, JackTokenizer.TokenType.IDENTIFIER]:
@@ -149,19 +148,20 @@ class CompilationEngine:
         self.write("</parameterList>")
         return numArgs
     
-    def compile_subroutine_body(self):
+    def compile_subroutine_body(self, function_name):
         self.write("<subroutineBody>")
         self.indent_level += 1
         self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # '{'
         self.tokenizer.advance()
         while self.tokenizer.token_type() == JackTokenizer.TokenType.KEYWORD and self.tokenizer.keyword() == 'var':
             self.compile_var_dec()
+        self.vm_writer.writeFunction(f"{self.class_name}.{function_name}", self.symbol_table_subroutine.varCount('var'))
         self.compile_statements()
         self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # '}'
         self.tokenizer.advance()
         self.indent_level -= 1
         self.write("</subroutineBody>")
-        return
+        return self.symbol_table_subroutine.varCount('var')
     
     def compile_var_dec(self):
         self.write("<varDec>")
