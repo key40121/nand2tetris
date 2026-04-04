@@ -43,14 +43,18 @@ class VMWriter:
     
     def writeLabel(self, label):
         """Writes a VM label command."""
+        self.output_file.write(f"label {label}\n")
         return
     
     def writeGoto(self, label):
         """Writes a VM goto command."""
+        
+        self.output_file.write(f"{self.indent}goto {label}\n")
         return
     
     def writeIf(self, label):
         """Writes a VM if-goto command."""
+        self.output_file.write(f"{self.indent}if-goto {label}\n")
         return
     
     def writeCall(self, name, nArgs):

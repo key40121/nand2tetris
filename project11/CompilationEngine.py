@@ -117,8 +117,7 @@ class CompilationEngine:
 
         if function_return_type == 'void':
             self.vm_writer.writePush(VMWriter.Segment.CONSTANT, 0)  # push dummy value for void return
-
-        self.vm_writer.writeReturn()
+            self.vm_writer.writeReturn()
         return
     
     def compile_parameter_list(self):
@@ -258,6 +257,9 @@ class CompilationEngine:
         self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # '('
         self.tokenizer.advance()
         self.compile_expression()
+        self.label_count += 1
+        self.vm_writer.writeArithmetic(VMWriter.Command.NOT)  # if-goto expects true condition, so negate the expression result
+        self.vm_writer.writeIf(f"IF_FALSE{self.label_count}")
         self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # ')'
         self.tokenizer.advance()
         self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # '{'
@@ -270,6 +272,7 @@ class CompilationEngine:
         if self.tokenizer.token_type() == JackTokenizer.TokenType.KEYWORD and self.tokenizer.keyword() == 'else':
             self.write(f"<keyword> {self.tokenizer.keyword()} </keyword>")  # 'else'
             self.tokenizer.advance()
+            self.vm_writer.writeLabel(f"IF_FALSE{self.label_count}")  # label for else clause
             self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # '{'
             self.tokenizer.advance()
             self.compile_statements()
@@ -339,6 +342,7 @@ class CompilationEngine:
         self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # ';'
         self.tokenizer.advance()
         self.indent_level -= 1
+        self.vm_writer.writeReturn()  # for VM code generation
         self.write("</returnStatement>")
         return
     
@@ -410,6 +414,7 @@ class CompilationEngine:
                 self.tokenizer.advance()
             elif self.tokenizer.token_type() == JackTokenizer.TokenType.SYMBOL and self.tokenizer.symbol() in ('(', '.'):
                 # subroutine call
+                subroutine_name = None  # Initialize for local method calls
                 if self.tokenizer.symbol() == '.':
                     self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # '.'
                     self.tokenizer.advance()
@@ -419,11 +424,24 @@ class CompilationEngine:
                 self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # '('
                 self.tokenizer.advance()
                 numArgs = self.compile_expression_list()
-                self.vm_writer.writeCall(f"{identifier_name}.{subroutine_name}", numArgs)  # for VM code generation, we will fix the number of arguments later after compiling the expression list
+                full_call_name = f"{identifier_name}.{subroutine_name}" if subroutine_name else identifier_name
+                self.vm_writer.writeCall(full_call_name, numArgs)
                 self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # ')'
                 self.tokenizer.advance()
             else:
-                self.vm_writer.writePush(self.symbol_table_subroutine.kindOf(identifier_name), self.symbol_table_subroutine.indexOf(identifier_name))  # for VM code generation
+                # Variable reference - convert symbol table kind to VM segment
+                kind = self.symbol_table_subroutine.kindOf(identifier_name)
+                if kind == 'var':
+                    segment = VMWriter.Segment.LOCAL
+                elif kind == 'argument':
+                    segment = VMWriter.Segment.ARGUMENT
+                elif kind == 'static':
+                    segment = VMWriter.Segment.STATIC
+                elif kind == 'field':
+                    segment = VMWriter.Segment.THIS
+                else:
+                    raise Exception(f"Undefined variable: {identifier_name}")
+                self.vm_writer.writePush(segment, self.symbol_table_subroutine.indexOf(identifier_name))
         elif token_type == JackTokenizer.TokenType.SYMBOL and self.tokenizer.symbol() == '(':
             self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # '('
             self.tokenizer.advance()
