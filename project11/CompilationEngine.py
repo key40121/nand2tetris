@@ -115,9 +115,9 @@ class CompilationEngine:
         print("subroutine class table")
         self.symbol_table_subroutine.show()  # for debugging
 
-        if function_return_type == 'void':
-            self.vm_writer.writePush(VMWriter.Segment.CONSTANT, 0)  # push dummy value for void return
-            self.vm_writer.writeReturn()
+        # if function_return_type == 'void':
+        #     self.vm_writer.writePush(VMWriter.Segment.CONSTANT, 0)  # push dummy value for void return
+        #     self.vm_writer.writeReturn()
         return
     
     def compile_parameter_list(self):
@@ -288,9 +288,15 @@ class CompilationEngine:
         self.indent_level += 1
         self.write(f"<keyword> {self.tokenizer.keyword()} </keyword>")  # 'while'
         self.tokenizer.advance()
+        self.label_count += 1
+        self.vm_writer.writeLabel(f"WHILE_EXP{self.label_count}")  # label for while expression
         self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # '('
         self.tokenizer.advance()
         self.compile_expression()
+        self.vm_writer.writeArithmetic(VMWriter.Command.NOT)  # if-goto expects true condition, so negate the expression result
+        self.label_count += 1
+        whileFinishLabel = f"WHILE_END{self.label_count}"
+        self.vm_writer.writeIf(f"WHILE_END{self.label_count}")  # label for while end
         self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # ')'
         self.tokenizer.advance()
         self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  #
@@ -300,6 +306,7 @@ class CompilationEngine:
         self.tokenizer.advance()
         self.indent_level -= 1
         self.write("</whileStatement>")
+        self.vm_writer.writeLabel(f"{whileFinishLabel}")  # label for while expression
         return
   
     def compile_do(self):
@@ -336,12 +343,16 @@ class CompilationEngine:
         self.indent_level += 1
         self.write(f"<keyword> {self.tokenizer.keyword()} </keyword>")  # 'return'
         self.tokenizer.advance()
+        is_void = True  # assume void return until we see an expression
         # If the next token is not the symbol ';', there is an expression to compile
         if not (self.tokenizer.token_type() == JackTokenizer.TokenType.SYMBOL and self.tokenizer.symbol() == ';'):
             self.compile_expression()
+            is_void = False
         self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # ';'
         self.tokenizer.advance()
         self.indent_level -= 1
+        if is_void == True:
+            self.vm_writer.writePush(VMWriter.Segment.CONSTANT, 0)  # push dummy value for void return  
         self.vm_writer.writeReturn()  # for VM code generation
         self.write("</returnStatement>")
         return
