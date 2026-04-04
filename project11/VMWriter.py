@@ -64,13 +64,13 @@ class VMWriter:
     
     def writeFunction(self, name, nLocals):
         """Writes a VM function command."""
+        self.output_file.write("\n")  # add an extra newline for readability between
         print(f"function {name} {nLocals}", file=self.output_file)
         return
     
     def writeReturn(self):
         """Writes a VM return command."""
         self.output_file.write(f"{self.indent}return\n")
-        self.output_file.write("\n")  # add an extra newline for readability between functions
         return
     
     def close(self):        
