@@ -266,6 +266,7 @@ class CompilationEngine:
         self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # '{'
         self.tokenizer.advance()
         self.compile_statements()
+        self.vm_writer.writeGoto(f"IF_END{label_id}")  # label for if end
         self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # '}'
         self.tokenizer.advance()
 
@@ -280,6 +281,7 @@ class CompilationEngine:
             self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # '}'
             self.tokenizer.advance()
 
+        self.vm_writer.writeLabel(f"IF_END{label_id}")  # label for if end
         self.indent_level -= 1
         self.write("</ifStatement>")
         return
