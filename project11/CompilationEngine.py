@@ -412,6 +412,13 @@ class CompilationEngine:
             self.tokenizer.advance()
         elif token_type == JackTokenizer.TokenType.KEYWORD:
             self.write(f"<keyword> {self.tokenizer.keyword()} </keyword>")
+            if self.tokenizer.keyword() in ['true', 'false', 'null']:
+                    # for VM code generation, we can push the keyword constant and let the VM handle it
+                if self.tokenizer.keyword() == 'true':
+                    self.vm_writer.writePush(VMWriter.Segment.CONSTANT, 0)  # true is represented as -1 in VM, but we can push 1 and let the VM handle it
+                    self.vm_writer.writeArithmetic(VMWriter.Command.NEG)  # negate 1 to get -1 for true
+                else:
+                    self.vm_writer.writePush(VMWriter.Segment.CONSTANT, 0)  # false and null are represented as 0 in VM
             self.tokenizer.advance()
         elif token_type == JackTokenizer.TokenType.IDENTIFIER:
             self.write(f"<identifier> {self.tokenizer.identifier()} </identifier>")
