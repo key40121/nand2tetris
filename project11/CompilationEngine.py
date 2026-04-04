@@ -421,7 +421,7 @@ class CompilationEngine:
                     # for VM code generation, we can push the keyword constant and let the VM handle it
                 if self.tokenizer.keyword() == 'true':
                     self.vm_writer.writePush(VMWriter.Segment.CONSTANT, 0)  # true is represented as -1 in VM, but we can push 1 and let the VM handle it
-                    self.vm_writer.writeArithmetic(VMWriter.Command.NEG)  # negate 1 to get -1 for true
+                    self.vm_writer.writeArithmetic(VMWriter.Command.NOT)  # negate 1 to get -1 for true
                 else:
                     self.vm_writer.writePush(VMWriter.Segment.CONSTANT, 0)  # false and null are represented as 0 in VM
             self.tokenizer.advance()

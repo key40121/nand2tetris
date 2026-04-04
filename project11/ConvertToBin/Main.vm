@@ -17,7 +17,7 @@ function Main.main 1
 
 function Main.convert 3
   push constant 0
-  neg
+  not
   pop local 2
 label WHILE_EXP1
   push local 2
