@@ -1,10 +1,286 @@
-function Square.new 4
-function Square.dispose 1
-function Square.draw 1
-function Square.erase 1
-function Square.incSize 1
-function Square.decSize 1
-function Square.moveUp 1
-function Square.moveDown 1
-function Square.moveLeft 1
-function Square.moveRight 1
+
+function Square.new 0
+  push argument 0
+  pop this None
+  push argument 1
+  pop this None
+  push argument 2
+  pop this None
+  call draw.None 0
+  pop temp 0
+  return
+
+function Square.dispose 0
+  call Memory.deAlloc 1
+  pop temp 0
+  push constant 0
+  return
+
+function Square.draw 0
+  push constant 0
+  not
+  call Screen.setColor 1
+  pop temp 0
+  push this None
+  push this None
+  push this None
+  push this None
+  add
+  push this None
+  push this None
+  add
+  call Screen.drawRectangle 4
+  pop temp 0
+  push constant 0
+  return
+
+function Square.erase 0
+  push constant 0
+  call Screen.setColor 1
+  pop temp 0
+  push this None
+  push this None
+  push this None
+  push this None
+  add
+  push this None
+  push this None
+  add
+  call Screen.drawRectangle 4
+  pop temp 0
+  push constant 0
+  return
+
+function Square.incSize 0
+  push this None
+  push this None
+  add
+  push constant 254
+  lt
+  push this None
+  push this None
+  add
+  push constant 510
+  lt
+  and
+  not
+  if-goto IF_FALSE1
+  call erase.None 0
+  pop temp 0
+  push this None
+  push constant 2
+  add
+  pop this None
+  call draw.None 0
+  pop temp 0
+  goto IF_END1
+label IF_END1
+  push constant 0
+  return
+
+function Square.decSize 0
+  push this None
+  push constant 2
+  gt
+  not
+  if-goto IF_FALSE2
+  call erase.None 0
+  pop temp 0
+  push this None
+  push constant 2
+  sub
+  pop this None
+  call draw.None 0
+  pop temp 0
+  goto IF_END2
+label IF_END2
+  push constant 0
+  return
+
+function Square.moveUp 0
+  push this None
+  push constant 1
+  gt
+  not
+  if-goto IF_FALSE3
+  push constant 0
+  call Screen.setColor 1
+  pop temp 0
+  push this None
+  push this None
+  push this None
+  add
+  push constant 1
+  sub
+  push this None
+  push this None
+  add
+  push this None
+  push this None
+  add
+  call Screen.drawRectangle 4
+  pop temp 0
+  push this None
+  push constant 2
+  sub
+  pop this None
+  push constant 0
+  not
+  call Screen.setColor 1
+  pop temp 0
+  push this None
+  push this None
+  push this None
+  push this None
+  add
+  push this None
+  push constant 1
+  add
+  call Screen.drawRectangle 4
+  pop temp 0
+  goto IF_END3
+label IF_END3
+  push constant 0
+  return
+
+function Square.moveDown 0
+  push this None
+  push this None
+  add
+  push constant 254
+  lt
+  not
+  if-goto IF_FALSE4
+  push constant 0
+  call Screen.setColor 1
+  pop temp 0
+  push this None
+  push this None
+  push this None
+  push this None
+  add
+  push this None
+  push constant 1
+  add
+  call Screen.drawRectangle 4
+  pop temp 0
+  push this None
+  push constant 2
+  add
+  pop this None
+  push constant 0
+  not
+  call Screen.setColor 1
+  pop temp 0
+  push this None
+  push this None
+  push this None
+  add
+  push constant 1
+  sub
+  push this None
+  push this None
+  add
+  push this None
+  push this None
+  add
+  call Screen.drawRectangle 4
+  pop temp 0
+  goto IF_END4
+label IF_END4
+  push constant 0
+  return
+
+function Square.moveLeft 0
+  push this None
+  push constant 1
+  gt
+  not
+  if-goto IF_FALSE5
+  push constant 0
+  call Screen.setColor 1
+  pop temp 0
+  push this None
+  push this None
+  add
+  push constant 1
+  sub
+  push this None
+  push this None
+  push this None
+  add
+  push this None
+  push this None
+  add
+  call Screen.drawRectangle 4
+  pop temp 0
+  push this None
+  push constant 2
+  sub
+  pop this None
+  push constant 0
+  not
+  call Screen.setColor 1
+  pop temp 0
+  push this None
+  push this None
+  push this None
+  push constant 1
+  add
+  push this None
+  push this None
+  add
+  call Screen.drawRectangle 4
+  pop temp 0
+  goto IF_END5
+label IF_END5
+  push constant 0
+  return
+
+function Square.moveRight 0
+  push this None
+  push this None
+  add
+  push constant 510
+  lt
+  not
+  if-goto IF_FALSE6
+  push constant 0
+  call Screen.setColor 1
+  pop temp 0
+  push this None
+  push this None
+  push this None
+  push constant 1
+  add
+  push this None
+  push this None
+  add
+  call Screen.drawRectangle 4
+  pop temp 0
+  push this None
+  push constant 2
+  add
+  pop this None
+  push constant 0
+  not
+  call Screen.setColor 1
+  pop temp 0
+  push this None
+  push this None
+  add
+  push constant 1
+  sub
+  push this None
+  push this None
+  push this None
+  add
+  push this None
+  push this None
+  add
+  call Screen.drawRectangle 4
+  pop temp 0
+  goto IF_END6
+label IF_END6
+  push constant 0
+  return

@@ -234,6 +234,8 @@ class CompilationEngine:
         self.tokenizer.advance()
         self.indent_level -= 1
         actual_kind = self.symbol_table_subroutine.kindOf(varName)
+        if actual_kind is None:
+            actual_kind = self.symbol_table_class.kindOf(varName)
         if actual_kind == 'argument':
             segment = VMWriter.Segment.ARGUMENT
         elif actual_kind == 'var':
@@ -243,6 +245,7 @@ class CompilationEngine:
         elif actual_kind == 'field':
             segment = VMWriter.Segment.THIS
         else:
+            print(f"Undefined variable {varName} in let statement")  # for debugging
             raise Exception(f"Undefined variable {varName}")
         self.vm_writer.writePop(segment, self.symbol_table_subroutine.indexOf(varName))
         print(f"let statement: pop {segment} {self.symbol_table_subroutine.indexOf(varName)}")  # for debugging
@@ -327,6 +330,22 @@ class CompilationEngine:
             self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # '.'
             self.tokenizer.advance()
             self.write(f"<identifier> {self.tokenizer.identifier()} </identifier>")  # subroutineName
+            # name = self.symbol_table_subroutine.indexOf(self.tokenizer.identifier())  # check if it's a method call on a variable
+            # if name is not None:
+            #     # It's a method call on a variable, so we need to push the variable as the first argument
+            #     kind = self.symbol_table_subroutine.kindOf(self.tokenizer.identifier())
+            #     if kind == 'var':
+            #         segment = VMWriter.Segment.LOCAL
+            #     elif kind == 'argument':
+            #         segment = VMWriter.Segment.ARGUMENT
+            #     elif kind == 'static':
+            #         segment = VMWriter.Segment.STATIC
+            #     elif kind == 'field':
+            #         segment = VMWriter.Segment.THIS
+            #     else:
+            #         raise Exception(f"Undefined variable: {self.tokenizer.identifier()}")
+            #     self.vm_writer.writePush(segment, name)  # push the object reference as the first argument
+            #     name = self.symbol_table_subroutine.typeOf(self.tokenizer.identifier())  # get the class name for method call
             subroutine_name = self.tokenizer.identifier()  # for VM code generation
             self.tokenizer.advance()
         self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # '('
@@ -454,6 +473,8 @@ class CompilationEngine:
             else:
                 # Variable reference - convert symbol table kind to VM segment
                 kind = self.symbol_table_subroutine.kindOf(identifier_name)
+                if kind is None:
+                    kind = self.symbol_table_class.kindOf(identifier_name)
                 if kind == 'var':
                     segment = VMWriter.Segment.LOCAL
                 elif kind == 'argument':
