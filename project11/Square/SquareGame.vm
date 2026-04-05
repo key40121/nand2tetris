@@ -1,12 +1,14 @@
 
 function SquareGame.new 0
   push constant 0
+  call Memory.alloc 1
+  push constant 0
   push constant 0
   push constant 30
   call Square.new 3
-  pop this None
+  pop this 0
   push constant 0
-  pop this None
+  pop this 1
   return
 
 function SquareGame.dispose 0
@@ -76,8 +78,7 @@ label WHILE_EXP7
   if-goto WHILE_END8
   call Keyboard.keyPressed 0
   pop local 0
-  call moveSquare.None 0
-  pop temp 0
+  call SquareGame.moveSquare 0
   goto WHILE_EXP7
 label WHILE_END8
   push local 0
@@ -114,7 +115,7 @@ label IF_END11
   not
   if-goto IF_FALSE12
   push constant 1
-  pop this None
+  pop this 1
   goto IF_END12
 label IF_END12
   push local 0
@@ -123,7 +124,7 @@ label IF_END12
   not
   if-goto IF_FALSE13
   push constant 2
-  pop this None
+  pop this 1
   goto IF_END13
 label IF_END13
   push local 0
@@ -132,7 +133,7 @@ label IF_END13
   not
   if-goto IF_FALSE14
   push constant 3
-  pop this None
+  pop this 1
   goto IF_END14
 label IF_END14
   push local 0
@@ -141,7 +142,7 @@ label IF_END14
   not
   if-goto IF_FALSE15
   push constant 4
-  pop this None
+  pop this 1
   goto IF_END15
 label IF_END15
 label WHILE_EXP16
@@ -153,8 +154,7 @@ label WHILE_EXP16
   if-goto WHILE_END17
   call Keyboard.keyPressed 0
   pop local 0
-  call moveSquare.None 0
-  pop temp 0
+  call SquareGame.moveSquare 0
   goto WHILE_EXP16
 label WHILE_END17
   goto WHILE_EXP5

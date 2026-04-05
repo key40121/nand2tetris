@@ -104,12 +104,9 @@ class CompilationEngine:
         self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # '('
         self.tokenizer.advance()
         numargs = self.compile_parameter_list(function_type)
-         # for VM code generation, we need to know the number of local variables
-        # which we can get from the symbol table after compiling the subroutine body
-        # self.vm_writer.writeFunction(f"{self.class_name}.{function_name}", numLocals) # subtract 1 for 'this' argument
         self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # ')'
         self.tokenizer.advance()
-        numLocals = self.compile_subroutine_body(function_name)
+        numLocals = self.compile_subroutine_body(function_name, function_type, numargs)
         self.indent_level -= 1
         self.write("</subroutineDec>")
 
@@ -148,7 +145,7 @@ class CompilationEngine:
         self.write("</parameterList>")
         return numArgs
     
-    def compile_subroutine_body(self, function_name):
+    def compile_subroutine_body(self, function_name, function_type, numargs):
         self.write("<subroutineBody>")
         self.indent_level += 1
         self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # '{'
@@ -156,6 +153,10 @@ class CompilationEngine:
         while self.tokenizer.token_type() == JackTokenizer.TokenType.KEYWORD and self.tokenizer.keyword() == 'var':
             self.compile_var_dec()
         self.vm_writer.writeFunction(f"{self.class_name}.{function_name}", self.symbol_table_subroutine.varCount('var'))
+        if function_type == 'constructor':
+            # for constructor, we need to push the base address of the new object onto the stack before returning
+            self.vm_writer.writePush(VMWriter.Segment.CONSTANT, numargs)  # push base address of new object (which is now in pointer 0 after Memory.alloc)
+            self.vm_writer.writeCall('Memory.alloc', 1)  # call Memory.alloc to allocate memory for the new object
         self.compile_statements()
         self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # '}'
         self.tokenizer.advance()
@@ -234,8 +235,10 @@ class CompilationEngine:
         self.tokenizer.advance()
         self.indent_level -= 1
         actual_kind = self.symbol_table_subroutine.kindOf(varName)
-        if actual_kind is None:
+        actual_index = self.symbol_table_subroutine.indexOf(varName)
+        if actual_kind is None or actual_index is None:
             actual_kind = self.symbol_table_class.kindOf(varName)
+            actual_index = self.symbol_table_class.indexOf(varName)
         if actual_kind == 'argument':
             segment = VMWriter.Segment.ARGUMENT
         elif actual_kind == 'var':
@@ -247,7 +250,7 @@ class CompilationEngine:
         else:
             print(f"Undefined variable {varName} in let statement")  # for debugging
             raise Exception(f"Undefined variable {varName}")
-        self.vm_writer.writePop(segment, self.symbol_table_subroutine.indexOf(varName))
+        self.vm_writer.writePop(segment, actual_index)  # for VM code generation
         print(f"let statement: pop {segment} {self.symbol_table_subroutine.indexOf(varName)}")  # for debugging
         self.write("</letStatement>")
         return
@@ -342,6 +345,8 @@ class CompilationEngine:
                 raise Exception(f"Undefined variable: {name}")
             self.vm_writer.writePush(segment, self.symbol_table_subroutine.indexOf(name))  # push the object reference as the first argument
 
+        isClassMethodCall = False
+
         self.tokenizer.advance()
         if self.tokenizer.token_type() == JackTokenizer.TokenType.SYMBOL and self.tokenizer.symbol() == '.':
             self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # '.'
@@ -349,6 +354,8 @@ class CompilationEngine:
             self.write(f"<identifier> {self.tokenizer.identifier()} </identifier>")  # subroutineName
             subroutine_name = self.tokenizer.identifier()  # for VM code generation
             self.tokenizer.advance()
+        else:
+            isClassMethodCall = True
         self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # '('
         self.tokenizer.advance()
         numargs = self.compile_expression_list()
@@ -358,6 +365,10 @@ class CompilationEngine:
         self.tokenizer.advance()  # consume ';'
         self.indent_level -= 1
         self.write("</doStatement>")
+
+        if isClassMethodCall:
+            self.vm_writer.writeCall(f"{self.class_name}.{name}", numargs)  # class method call, so use name as class name
+            return
 
         method_type = self.symbol_table_subroutine.typeOf(name)  # check if it's a method call on a variable again for VM code generation
         if method_type is None:
