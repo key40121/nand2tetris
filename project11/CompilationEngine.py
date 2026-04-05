@@ -325,27 +325,28 @@ class CompilationEngine:
         self.write(f"<identifier> {self.tokenizer.identifier()} </identifier>")  # subroutineName or className or varName
         name = self.tokenizer.identifier()  # for VM code generation
         subroutine_name = None  # for VM code generation
+
+        method_object = self.symbol_table_subroutine.kindOf(name)  # check if it's a method call on a variable
+        if method_object is not None:
+            print(f"do statement: found method call on variable {name} of kind {method_object}")  # for debugging
+            # It's a method call on a variable, so we need to push the variable as the first argument
+            if method_object == 'var':
+                segment = VMWriter.Segment.LOCAL
+            elif method_object == 'argument':
+                segment = VMWriter.Segment.ARGUMENT
+            elif method_object == 'static':
+                segment = VMWriter.Segment.STATIC
+            elif method_object == 'field':
+                segment = VMWriter.Segment.THIS
+            else:
+                raise Exception(f"Undefined variable: {name}")
+            self.vm_writer.writePush(segment, self.symbol_table_subroutine.indexOf(name))  # push the object reference as the first argument
+
         self.tokenizer.advance()
         if self.tokenizer.token_type() == JackTokenizer.TokenType.SYMBOL and self.tokenizer.symbol() == '.':
             self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # '.'
             self.tokenizer.advance()
             self.write(f"<identifier> {self.tokenizer.identifier()} </identifier>")  # subroutineName
-            # name = self.symbol_table_subroutine.indexOf(self.tokenizer.identifier())  # check if it's a method call on a variable
-            # if name is not None:
-            #     # It's a method call on a variable, so we need to push the variable as the first argument
-            #     kind = self.symbol_table_subroutine.kindOf(self.tokenizer.identifier())
-            #     if kind == 'var':
-            #         segment = VMWriter.Segment.LOCAL
-            #     elif kind == 'argument':
-            #         segment = VMWriter.Segment.ARGUMENT
-            #     elif kind == 'static':
-            #         segment = VMWriter.Segment.STATIC
-            #     elif kind == 'field':
-            #         segment = VMWriter.Segment.THIS
-            #     else:
-            #         raise Exception(f"Undefined variable: {self.tokenizer.identifier()}")
-            #     self.vm_writer.writePush(segment, name)  # push the object reference as the first argument
-            #     name = self.symbol_table_subroutine.typeOf(self.tokenizer.identifier())  # get the class name for method call
             subroutine_name = self.tokenizer.identifier()  # for VM code generation
             self.tokenizer.advance()
         self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # '('
@@ -358,7 +359,18 @@ class CompilationEngine:
         self.indent_level -= 1
         self.write("</doStatement>")
 
-        self.vm_writer.writeCall(f"{name}.{subroutine_name}", numargs)  # for VM code generation
+        method_type = self.symbol_table_subroutine.typeOf(name)  # check if it's a method call on a variable again for VM code generation
+        if method_type is None:
+            method_type = self.symbol_table_class.typeOf(name)
+
+
+        if method_type is not None:
+            full_call_name = f"{method_type}.{subroutine_name}"  # method call on a variable, so use the variable's type as the class name
+            numargs += 1  # for method calls on variables, we need to add 1 to the number of arguments to account for the object reference
+        else:
+            full_call_name = f"{name}.{subroutine_name}"  # not a method call on a variable, so use the name as the class name
+
+        self.vm_writer.writeCall(full_call_name, numargs)  # for VM code generation
         self.vm_writer.writePop(VMWriter.Segment.TEMP, 0)  # discard return value of do statement
         return
     
