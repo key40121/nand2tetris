@@ -9,6 +9,7 @@ function SquareGame.new 0
   pop this 0
   push constant 0
   pop this 1
+  push pointer 0
   return
 
 function SquareGame.dispose 0
@@ -78,7 +79,8 @@ label WHILE_EXP7
   if-goto WHILE_END8
   call Keyboard.keyPressed 0
   pop local 0
-  call SquareGame.moveSquare 0
+  call SquareGame.moveSquare 1
+  pop temp 0
   goto WHILE_EXP7
 label WHILE_END8
   push local 0
@@ -154,7 +156,8 @@ label WHILE_EXP16
   if-goto WHILE_END17
   call Keyboard.keyPressed 0
   pop local 0
-  call SquareGame.moveSquare 0
+  call SquareGame.moveSquare 1
+  pop temp 0
   goto WHILE_EXP16
 label WHILE_END17
   goto WHILE_EXP5

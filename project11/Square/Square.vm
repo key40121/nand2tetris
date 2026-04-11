@@ -8,7 +8,9 @@ function Square.new 0
   pop this 1
   push argument 2
   pop this 2
-  call Square.draw 0
+  call Square.draw 1
+  pop temp 0
+  push pointer 0
   return
 
 function Square.dispose 0
@@ -66,12 +68,14 @@ function Square.incSize 0
   and
   not
   if-goto IF_FALSE1
-  call Square.erase 0
+  call Square.erase 1
+  pop temp 0
   push this None
   push constant 2
   add
   pop this 2
-  call Square.draw 0
+  call Square.draw 1
+  pop temp 0
   goto IF_END1
 label IF_END1
   push constant 0
@@ -83,12 +87,14 @@ function Square.decSize 0
   gt
   not
   if-goto IF_FALSE2
-  call Square.erase 0
+  call Square.erase 1
+  pop temp 0
   push this None
   push constant 2
   sub
   pop this 2
-  call Square.draw 0
+  call Square.draw 1
+  pop temp 0
   goto IF_END2
 label IF_END2
   push constant 0

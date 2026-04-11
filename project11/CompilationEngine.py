@@ -157,7 +157,7 @@ class CompilationEngine:
             # for constructor, we need to push the base address of the new object onto the stack before returning
             self.vm_writer.writePush(VMWriter.Segment.CONSTANT, numargs)  # push base address of new object (which is now in pointer 0 after Memory.alloc)
             self.vm_writer.writeCall('Memory.alloc', 1)  # call Memory.alloc to allocate memory for the new object
-        self.compile_statements()
+        self.compile_statements(isConstructor=(function_type == 'constructor'))
         self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # '}'
         self.tokenizer.advance()
         self.indent_level -= 1
@@ -196,7 +196,7 @@ class CompilationEngine:
             self.symbol_table_subroutine.define(name, type, 'var')
         return
     
-    def compile_statements(self):
+    def compile_statements(self, isConstructor=False):
         self.write("<statements>")
         self.indent_level += 1
         while self.tokenizer.token_type() == JackTokenizer.TokenType.KEYWORD and self.tokenizer.keyword() in ['let', 'if', 'while', 'do', 'return']:
@@ -209,6 +209,9 @@ class CompilationEngine:
             elif self.tokenizer.keyword() == 'do':
                 self.compile_do()
             elif self.tokenizer.keyword() == 'return':
+                if isConstructor:
+                    # for constructor, we need to return the base address of the new object (which is now in pointer 0 after Memory.alloc)
+                    self.vm_writer.writePush(VMWriter.Segment.POINTER, 0)  # push base address of new object
                 self.compile_return()
         self.indent_level -= 1
         self.write("</statements>")
@@ -367,7 +370,8 @@ class CompilationEngine:
         self.write("</doStatement>")
 
         if isClassMethodCall:
-            self.vm_writer.writeCall(f"{self.class_name}.{name}", numargs)  # class method call, so use name as class name
+            self.vm_writer.writeCall(f"{self.class_name}.{name}", numargs + 1)  # class method call, so use name as class name
+            self.vm_writer.writePop(VMWriter.Segment.TEMP, 0)  # discard return value of do statement
             return
 
         method_type = self.symbol_table_subroutine.typeOf(name)  # check if it's a method call on a variable again for VM code generation
