@@ -35,6 +35,7 @@ class CompilationEngine:
         while self.tokenizer.token_type() == JackTokenizer.TokenType.KEYWORD and self.tokenizer.keyword() in ['static', 'field']:
             self.compile_class_var_dec()
         while self.tokenizer.token_type() == JackTokenizer.TokenType.KEYWORD and self.tokenizer.keyword() in ['constructor', 'function', 'method']:
+
             self.compile_subroutine()
         self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # '}'
         self.tokenizer.advance()
@@ -157,6 +158,10 @@ class CompilationEngine:
             # for constructor, we need to push the base address of the new object onto the stack before returning
             self.vm_writer.writePush(VMWriter.Segment.CONSTANT, numargs)  # push base address of new object (which is now in pointer 0 after Memory.alloc)
             self.vm_writer.writeCall('Memory.alloc', 1)  # call Memory.alloc to allocate memory for the new object
+        elif function_type == 'method':
+            # for method, we need to push 'this' (the object reference) as the first argument before returning
+            self.vm_writer.writePush(VMWriter.Segment.ARGUMENT, 0)  # push 'this' (the object reference) as the first argument for method call
+            self.vm_writer.writePop(VMWriter.Segment.POINTER, 0)  # set 'this' pointer to the current object reference for method call
         self.compile_statements(isConstructor=(function_type == 'constructor'))
         self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # '}'
         self.tokenizer.advance()
@@ -209,9 +214,9 @@ class CompilationEngine:
             elif self.tokenizer.keyword() == 'do':
                 self.compile_do()
             elif self.tokenizer.keyword() == 'return':
-                if isConstructor:
+                # if isConstructor:
                     # for constructor, we need to return the base address of the new object (which is now in pointer 0 after Memory.alloc)
-                    self.vm_writer.writePush(VMWriter.Segment.POINTER, 0)  # push base address of new object
+                    # self.vm_writer.writePush(VMWriter.Segment.POINTER, 0)  # push base address of new object
                 self.compile_return()
         self.indent_level -= 1
         self.write("</statements>")
@@ -463,11 +468,13 @@ class CompilationEngine:
             self.tokenizer.advance()
         elif token_type == JackTokenizer.TokenType.KEYWORD:
             self.write(f"<keyword> {self.tokenizer.keyword()} </keyword>")
-            if self.tokenizer.keyword() in ['true', 'false', 'null']:
+            if self.tokenizer.keyword() in ['true', 'false', 'null', 'this']:
                     # for VM code generation, we can push the keyword constant and let the VM handle it
                 if self.tokenizer.keyword() == 'true':
                     self.vm_writer.writePush(VMWriter.Segment.CONSTANT, 0)  # true is represented as -1 in VM, but we can push 1 and let the VM handle it
                     self.vm_writer.writeArithmetic(VMWriter.Command.NOT)  # negate 1 to get -1 for true
+                elif self.tokenizer.keyword() == 'this':
+                    self.vm_writer.writePush(VMWriter.Segment.POINTER, 0)  # push 'this' reference for VM code generation
                 else:
                     self.vm_writer.writePush(VMWriter.Segment.CONSTANT, 0)  # false and null are represented as 0 in VM
             self.tokenizer.advance()
@@ -512,7 +519,8 @@ class CompilationEngine:
                     segment = VMWriter.Segment.THIS
                 else:
                     raise Exception(f"Undefined variable: {identifier_name}")
-                self.vm_writer.writePush(segment, self.symbol_table_subroutine.indexOf(identifier_name))
+                identifier_index = self.symbol_table_subroutine.indexOf(identifier_name) if self.symbol_table_subroutine.indexOf(identifier_name) is not None else self.symbol_table_class.indexOf(identifier_name)
+                self.vm_writer.writePush(segment, identifier_index)
         elif token_type == JackTokenizer.TokenType.SYMBOL and self.tokenizer.symbol() == '(':
             self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # '('
             self.tokenizer.advance()
