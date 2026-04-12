@@ -469,7 +469,15 @@ class CompilationEngine:
             self.tokenizer.advance()
         elif token_type == JackTokenizer.TokenType.STRING_CONST:
             self.write(f"<stringConstant> {self.tokenizer.string_val()} </stringConstant>")
-            self.vm_writer.writePush(VMWriter.Segment.CONSTANT, self.tokenizer.string_val())
+            # self.vm_writer.writePush(VMWriter.Segment.CONSTANT, self.tokenizer.string_val())
+            stringNums = len(self.tokenizer.string_val())
+            self.vm_writer.writePush(VMWriter.Segment.CONSTANT, stringNums)  # push the length of the string
+            self.vm_writer.writeCall('String.new', 1)  # call String.new to create a new string object
+
+            for char in self.tokenizer.string_val():
+                self.vm_writer.writePush(VMWriter.Segment.CONSTANT, ord(char))  # push the ASCII value of the character
+                self.vm_writer.writeCall('String.appendChar', 2)  # call String.appendChar to append the character to the string object
+
             self.tokenizer.advance()
         elif token_type == JackTokenizer.TokenType.KEYWORD:
             self.write(f"<keyword> {self.tokenizer.keyword()} </keyword>")
