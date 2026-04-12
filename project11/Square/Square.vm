@@ -8,6 +8,7 @@ function Square.new 0
   pop this 1
   push argument 2
   pop this 2
+  push pointer 0
   call Square.draw 1
   pop temp 0
   push pointer 0
@@ -76,17 +77,20 @@ function Square.incSize 0
   lt
   and
   not
-  if-goto IF_FALSE1
+  if-goto IF_FALSE.incSize.1
+  push pointer 0
   call Square.erase 1
   pop temp 0
   push this 2
   push constant 2
   add
   pop this 2
+  push pointer 0
   call Square.draw 1
   pop temp 0
-  goto IF_END1
-label IF_END1
+  goto IF_END.incSize.1
+label IF_FALSE.incSize.1
+label IF_END.incSize.1
   push constant 0
   return
 
@@ -97,17 +101,20 @@ function Square.decSize 0
   push constant 2
   gt
   not
-  if-goto IF_FALSE2
+  if-goto IF_FALSE.decSize.2
+  push pointer 0
   call Square.erase 1
   pop temp 0
   push this 2
   push constant 2
   sub
   pop this 2
+  push pointer 0
   call Square.draw 1
   pop temp 0
-  goto IF_END2
-label IF_END2
+  goto IF_END.decSize.2
+label IF_FALSE.decSize.2
+label IF_END.decSize.2
   push constant 0
   return
 
@@ -118,7 +125,7 @@ function Square.moveUp 0
   push constant 1
   gt
   not
-  if-goto IF_FALSE3
+  if-goto IF_FALSE.moveUp.3
   push constant 0
   call Screen.setColor 1
   pop temp 0
@@ -154,8 +161,9 @@ function Square.moveUp 0
   add
   call Screen.drawRectangle 4
   pop temp 0
-  goto IF_END3
-label IF_END3
+  goto IF_END.moveUp.3
+label IF_FALSE.moveUp.3
+label IF_END.moveUp.3
   push constant 0
   return
 
@@ -168,7 +176,7 @@ function Square.moveDown 0
   push constant 254
   lt
   not
-  if-goto IF_FALSE4
+  if-goto IF_FALSE.moveDown.4
   push constant 0
   call Screen.setColor 1
   pop temp 0
@@ -204,8 +212,9 @@ function Square.moveDown 0
   add
   call Screen.drawRectangle 4
   pop temp 0
-  goto IF_END4
-label IF_END4
+  goto IF_END.moveDown.4
+label IF_FALSE.moveDown.4
+label IF_END.moveDown.4
   push constant 0
   return
 
@@ -216,7 +225,7 @@ function Square.moveLeft 0
   push constant 1
   gt
   not
-  if-goto IF_FALSE5
+  if-goto IF_FALSE.moveLeft.5
   push constant 0
   call Screen.setColor 1
   pop temp 0
@@ -252,8 +261,9 @@ function Square.moveLeft 0
   add
   call Screen.drawRectangle 4
   pop temp 0
-  goto IF_END5
-label IF_END5
+  goto IF_END.moveLeft.5
+label IF_FALSE.moveLeft.5
+label IF_END.moveLeft.5
   push constant 0
   return
 
@@ -266,7 +276,7 @@ function Square.moveRight 0
   push constant 510
   lt
   not
-  if-goto IF_FALSE6
+  if-goto IF_FALSE.moveRight.6
   push constant 0
   call Screen.setColor 1
   pop temp 0
@@ -302,7 +312,8 @@ function Square.moveRight 0
   add
   call Screen.drawRectangle 4
   pop temp 0
-  goto IF_END6
-label IF_END6
+  goto IF_END.moveRight.6
+label IF_FALSE.moveRight.6
+label IF_END.moveRight.6
   push constant 0
   return

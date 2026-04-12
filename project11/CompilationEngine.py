@@ -13,6 +13,7 @@ class CompilationEngine:
         self.indent_level = 0
         self.class_name = None  # to keep track of the current class name for symbol table and code generation
         self.label_count = 0  # for generating unique labels in if and while statements
+        self.function_name = None  # to keep track of the current function name for VM code generation
 
     def write(self, content):
         indent = '  ' * self.indent_level
@@ -101,6 +102,7 @@ class CompilationEngine:
         self.tokenizer.advance()
         self.write(f"<identifier> {self.tokenizer.identifier()} </identifier>")  # subroutineName
         function_name = self.tokenizer.identifier()
+        self.function_name = function_name  # for VM code generation
         self.tokenizer.advance()
         self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # '('
         self.tokenizer.advance()
@@ -274,13 +276,13 @@ class CompilationEngine:
         self.label_count += 1
         label_id = self.label_count  # for unique labels in if statements
         self.vm_writer.writeArithmetic(VMWriter.Command.NOT)  # if-goto expects true condition, so negate the expression result
-        self.vm_writer.writeIf(f"IF_FALSE{label_id}")  # label for if false
+        self.vm_writer.writeIf(f"IF_FALSE.{self.function_name}.{label_id}")  # label for if false
         self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # ')'
         self.tokenizer.advance()
         self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # '{'
         self.tokenizer.advance()
         self.compile_statements()
-        self.vm_writer.writeGoto(f"IF_END{label_id}")  # label for if end
+        self.vm_writer.writeGoto(f"IF_END.{self.function_name}.{label_id}")  # label for if end
         self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # '}'
         self.tokenizer.advance()
 
@@ -288,14 +290,16 @@ class CompilationEngine:
         if self.tokenizer.token_type() == JackTokenizer.TokenType.KEYWORD and self.tokenizer.keyword() == 'else':
             self.write(f"<keyword> {self.tokenizer.keyword()} </keyword>")  # 'else'
             self.tokenizer.advance()
-            self.vm_writer.writeLabel(f"IF_FALSE{label_id}")  # label for else clause
+            self.vm_writer.writeLabel(f"IF_FALSE.{self.function_name}.{label_id}")  # label for else clause
             self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # '{'
             self.tokenizer.advance()
             self.compile_statements()
             self.write(f"<symbol> {self.tokenizer.symbol()} </symbol>")  # '}'
             self.tokenizer.advance()
+        else:
+            self.vm_writer.writeLabel(f"IF_FALSE.{self.function_name}.{label_id}")  # label for if false (no else clause, so just jump to if end)
 
-        self.vm_writer.writeLabel(f"IF_END{label_id}")  # label for if end
+        self.vm_writer.writeLabel(f"IF_END.{self.function_name}.{label_id}")  # label for if end
         self.indent_level -= 1
         self.write("</ifStatement>")
         return
@@ -375,6 +379,7 @@ class CompilationEngine:
         self.write("</doStatement>")
 
         if isClassMethodCall:
+            self.vm_writer.writePush(VMWriter.Segment.POINTER, 0)  # push 'this' as the first argument for method call
             self.vm_writer.writeCall(f"{self.class_name}.{name}", numargs + 1)  # class method call, so use name as class name
             self.vm_writer.writePop(VMWriter.Segment.TEMP, 0)  # discard return value of do statement
             return

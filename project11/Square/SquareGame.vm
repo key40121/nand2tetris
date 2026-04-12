@@ -30,38 +30,42 @@ function SquareGame.moveSquare 0
   push constant 1
   eq
   not
-  if-goto IF_FALSE1
+  if-goto IF_FALSE.moveSquare.1
   call Square.moveUp 1
   pop temp 0
-  goto IF_END1
-label IF_END1
+  goto IF_END.moveSquare.1
+label IF_FALSE.moveSquare.1
+label IF_END.moveSquare.1
   push this 1
   push constant 2
   eq
   not
-  if-goto IF_FALSE2
+  if-goto IF_FALSE.moveSquare.2
   call Square.moveDown 1
   pop temp 0
-  goto IF_END2
-label IF_END2
+  goto IF_END.moveSquare.2
+label IF_FALSE.moveSquare.2
+label IF_END.moveSquare.2
   push this 1
   push constant 3
   eq
   not
-  if-goto IF_FALSE3
+  if-goto IF_FALSE.moveSquare.3
   call Square.moveLeft 1
   pop temp 0
-  goto IF_END3
-label IF_END3
+  goto IF_END.moveSquare.3
+label IF_FALSE.moveSquare.3
+label IF_END.moveSquare.3
   push this 1
   push constant 4
   eq
   not
-  if-goto IF_FALSE4
+  if-goto IF_FALSE.moveSquare.4
   call Square.moveRight 1
   pop temp 0
-  goto IF_END4
-label IF_END4
+  goto IF_END.moveSquare.4
+label IF_FALSE.moveSquare.4
+label IF_END.moveSquare.4
   push constant 5
   call Sys.wait 1
   pop temp 0
@@ -86,6 +90,7 @@ label WHILE_EXP7
   if-goto WHILE_END8
   call Keyboard.keyPressed 0
   pop local 0
+  push pointer 0
   call SquareGame.moveSquare 1
   pop temp 0
   goto WHILE_EXP7
@@ -94,66 +99,73 @@ label WHILE_END8
   push constant 81
   eq
   not
-  if-goto IF_FALSE9
+  if-goto IF_FALSE.run.9
   push constant 0
   not
   pop local 1
-  goto IF_END9
-label IF_END9
+  goto IF_END.run.9
+label IF_FALSE.run.9
+label IF_END.run.9
   push local 0
   push constant 90
   eq
   not
-  if-goto IF_FALSE10
+  if-goto IF_FALSE.run.10
   call Square.decSize 1
   pop temp 0
-  goto IF_END10
-label IF_END10
+  goto IF_END.run.10
+label IF_FALSE.run.10
+label IF_END.run.10
   push local 0
   push constant 88
   eq
   not
-  if-goto IF_FALSE11
+  if-goto IF_FALSE.run.11
   call Square.incSize 1
   pop temp 0
-  goto IF_END11
-label IF_END11
+  goto IF_END.run.11
+label IF_FALSE.run.11
+label IF_END.run.11
   push local 0
   push constant 131
   eq
   not
-  if-goto IF_FALSE12
+  if-goto IF_FALSE.run.12
   push constant 1
   pop this 1
-  goto IF_END12
-label IF_END12
+  goto IF_END.run.12
+label IF_FALSE.run.12
+label IF_END.run.12
   push local 0
   push constant 133
   eq
   not
-  if-goto IF_FALSE13
+  if-goto IF_FALSE.run.13
   push constant 2
   pop this 1
-  goto IF_END13
-label IF_END13
+  goto IF_END.run.13
+label IF_FALSE.run.13
+label IF_END.run.13
   push local 0
   push constant 130
   eq
   not
-  if-goto IF_FALSE14
+  if-goto IF_FALSE.run.14
   push constant 3
   pop this 1
-  goto IF_END14
-label IF_END14
+  goto IF_END.run.14
+label IF_FALSE.run.14
+label IF_END.run.14
   push local 0
   push constant 132
   eq
   not
-  if-goto IF_FALSE15
+  if-goto IF_FALSE.run.15
   push constant 4
   pop this 1
-  goto IF_END15
-label IF_END15
+  goto IF_END.run.15
+label IF_FALSE.run.15
+label IF_END.run.15
 label WHILE_EXP16
   push local 0
   push constant 0
@@ -163,6 +175,7 @@ label WHILE_EXP16
   if-goto WHILE_END17
   call Keyboard.keyPressed 0
   pop local 0
+  push pointer 0
   call SquareGame.moveSquare 1
   pop temp 0
   goto WHILE_EXP16
